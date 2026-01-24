@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react'; // เติม React แล
 import C_HomeMain from '../../../components/C_homemain'; 
 import Footer from '../../../components/Footerhomemain'; 
 
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
+
 const ProfileSettings: React.FC = () => {
   const [profile, setProfile] = useState({ name: '', email: '' });
   const [loading, setLoading] = useState(true);
@@ -22,8 +30,9 @@ const ProfileSettings: React.FC = () => {
 
   const fetchUserData = async (id: string|number) => {
     try {
+      const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
       setLoading(true);
-      const response = await fetch(`/api/profilesetting?id=${id}`);
+      const response = await fetch(`${API_BASE}/api/profile?id=${id}`);
       const data = await response.json();
       
       if (data && !data.error) {
@@ -42,7 +51,8 @@ const ProfileSettings: React.FC = () => {
   const saveProfile = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/profilesetting`, {
+      const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+      const response = await fetch(`${API_BASE}/api/profile/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -54,7 +64,21 @@ const ProfileSettings: React.FC = () => {
 
       if (!response.ok) throw new Error('บันทึกไม่สำเร็จ');
 
-      alert('บันทึกข้อมูลสำเร็จ');
+      // ใน profilesettings.tsx
+      if (response.ok) {
+        alert('บันทึกข้อมูลสำเร็จ');
+        
+        // อัปเดตข้อมูลใน LocalStorage ให้เป็นชื่อใหม่ด้วย
+        const session = localStorage.getItem('userSession');
+        if (session) {
+          const userData = JSON.parse(session);
+          userData.username = profile.name; // อัปเดตชื่อใหม่เข้าไป
+          localStorage.setItem('userSession', JSON.stringify(userData));
+        }
+        
+        // โหลดข้อมูลใหม่จาก Server มาแสดงผลอีกครั้ง
+        fetchUserData(currentId); 
+      }
     } catch (error: unknown) {
       alert(error instanceof Error ? error.message : 'เกิดข้อผิดพลาด');
     } finally {
@@ -66,6 +90,7 @@ const ProfileSettings: React.FC = () => {
   const [password, setPassword] = useState({ current: '', new: '', confirm: '' });
 
   const savePassword = async () => {
+    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
     if (!password.current || !password.new || !password.confirm){
       alert('กรุณากรอกข้อมูลรหัสผ่านให้ครบถ้วน');
       return;
@@ -77,7 +102,7 @@ const ProfileSettings: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/change-password`, {
+      const response = await fetch(`${API_BASE}/api/profile/change-password`, {
         method: 'POST',
         headers: { 'Content-Type' : 'application/json'},
         body: JSON.stringify({

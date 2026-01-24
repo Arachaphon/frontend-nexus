@@ -87,8 +87,6 @@ const RegisterPage: React.FC = () => {
     if (Object.keys(newErrors).length === 0) {
       setLoading(true);
       try {
-        // แก้ไขจุดที่ 1: ดึงค่า API_BASE จาก window.__ENV__ ตามแบบอาจารย์
-        // หากไม่มีค่าใน window (รัน dev ปกติ) ให้ใช้ localhost:8787 ตาม wrangler
         const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
         const response = await fetch(`${API_BASE}/api/register`, {
