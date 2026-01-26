@@ -62,7 +62,7 @@ const LoginPage = () => {
       // แก้ไขจุดสำคัญ: ดึงค่าจาก window.__ENV__ ตามมาตรฐาน Docker/อาจารย์
       const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
       
-      const response = await fetch(`${API_BASE}/api/login`, {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
