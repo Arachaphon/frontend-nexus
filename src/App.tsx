@@ -13,6 +13,10 @@ import UtilityCalculation from './pages/Admin/Homemain/utilitycalculation.tsx';
 import ProfileSettings from './pages/Admin/Homemain/profilesettings.tsx';
 import BankAccountConfig from './pages/Admin/Homemain/bankaccountconfig.tsx';
 import FloorSetup from './pages/Admin/Homemain/floorsetup.tsx';
+import RoomLayoutSetup from './pages/Admin/Homemain/roomsetup.tsx';
+import RoomPriceSetup from './pages/Admin/Homemain/roomprice.tsx';
+import RoomStatusSetup from './pages/Admin/Homemain/roomstatus.tsx';
+import RoomFinish from './pages/Admin/Homemain/homefinish.tsx';
 
 function App() {
   return (
@@ -28,6 +32,10 @@ function App() {
       <Route path="/homemain/profilesettings" element={<ProfileSettings />} />
       <Route path="/homemain/bankaccountconfig" element={<BankAccountConfig />} />
       <Route path="/homemain/floorsetup" element={<FloorSetup />} />
+      <Route path="/homemain/roomsetup" element={<RoomLayoutSetup />} />
+      <Route path="/homemain/roomprice" element={<RoomPriceSetup />} />
+      <Route path="/homemain/roomstatus" element={<RoomStatusSetup />} />
+      <Route path="/homemain/homefinish" element={<RoomFinish />} />
     </Routes>
   );
 }

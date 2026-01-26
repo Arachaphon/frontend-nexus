@@ -4,87 +4,129 @@ import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
 const HomeMain = () => {
-  const [activeTab, setActiveTab] = useState<'dormitory' | 'users'>('dormitory');
-    const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('dormitory');
+  const navigate = useNavigate();
 
   useEffect(() => {
-  const session = localStorage.getItem('userSession');
-  if (!session) {
+    const session = localStorage.getItem('userSession');
+    if (!session) {
       navigate('/login');
     }
   }, [navigate]);
 
   return (
-
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
       <C_HomeMain />
 
-      <div className="flex-grow w-full p-6 relative bg-[#f8fcf8] flex flex-col">
-
-        <div className="flex flex-col md:flex-row items-center justify-between mb-8 relative">
-
+      <div className="flex-grow w-full p-6 relative flex flex-col max-w-7xl mx-auto">
+        
+        {/* Header Section: Tabs and Add Button */}
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8 relative w-full">
           <div className="hidden md:block w-[120px]"></div>
 
-            <div className="flex space-x-8 gap-4">
-                <button
-                onClick={() => setActiveTab('dormitory')}
-                className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
-                    activeTab === 'dormitory'
-                    ? 'text-[#0e4b3a] border-[#0e4b3a]' 
-                    : 'text-gray-500 border-gray-300 hover:text-gray-700'
-                }`}
-                >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-                จัดการหอพัก
-                </button>
+          <div className="flex space-x-8 gap-4">
+            <button
+              onClick={() => setActiveTab('dormitory')}
+              className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
+                activeTab === 'dormitory'
+                  ? 'text-[#0e4b3a] border-[#0e4b3a]'
+                  : 'text-gray-500 border-gray-300 hover:text-gray-700'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              จัดการหอพัก
+            </button>
 
-                <button
-                onClick={() => setActiveTab('users')}
-                className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
-                    activeTab === 'users'
-                    ? 'text-[#0e4b3a] border-[#0e4b3a]' 
-                    : 'text-gray-500 border-gray-300 hover:text-gray-700'
-                }`}
-                >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                จัดการผู้ใช้งาน
-                </button>
-            </div>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
+                activeTab === 'users'
+                  ? 'text-[#0e4b3a] border-[#0e4b3a]'
+                  : 'text-gray-500 border-gray-300 hover:text-gray-700'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              จัดการผู้ใช้งาน
+            </button>
+          </div>
 
           <div className="mt-4 md:mt-0 w-[120px] flex justify-end">
             <Link to="/homemain/adddormitory">
-                <button className="bg-[#7d7671] hover:bg-[#68625d] text-white px-6 py-4 rounded-md shadow-sm text-sm font-medium transition-colors">
-                เพิ่มหอพัก 
-                </button>
+              <button className="bg-[#7d7671] hover:bg-[#68625d] text-white px-6 py-3 rounded-md shadow-sm text-sm font-medium transition-colors">
+                เพิ่มหอพัก
+              </button>
             </Link>
           </div>
-
         </div>
 
-        <div className="mt-6 flex-grow"> 
-
+        {/* Content Section */}
+        <div className="mt-6 flex-grow w-full flex justify-center items-start">
           {activeTab === 'dormitory' ? (
-            <div className="text-center text-gray-400 mt-20">
-              {/* <p>Dormitory List Content goes here</p> */}
+            // --- ส่วนที่เพิ่มใหม่: การ์ดหอพัก ---
+            <div className="w-full max-w-3xl border border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
+              {/* Card Header */}
+              <div className="border-b border-gray-300 px-4 py-3">
+                <h3 className="text-xl text-gray-700 font-normal">A</h3>
+              </div>
+              
+              {/* Card Body */}
+              <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                
+                {/* Left: Icon */}
+                <div className="bg-[#0e4b3a] p-3 rounded-md">
+                   {/* ไอคอนตึก (Building Icon) */}
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h11V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+                   </svg>
+                </div>
+
+                {/* Center: Stats */}
+                <div className="flex gap-6">
+                    {/* Box 1: Vacancy */}
+                    <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
+                        <div className="text-gray-800">
+                            <span className="text-2xl font-medium">2</span>
+                            <span className="text-sm mx-1">/</span>
+                            <span className="text-sm">2</span>
+                        </div>
+                        <span className="text-xs text-gray-500 mt-1">ห้องว่าง / ทั้งหมด</span>
+                    </div>
+
+                    {/* Box 2: Outstanding Bills */}
+                    <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
+                        <div className="text-gray-800">
+                            <span className="text-2xl font-medium">0</span>
+                        </div>
+                        <span className="text-xs text-gray-500 mt-1">บิลค้างชำระ</span>
+                    </div>
+                </div>
+
+                {/* Right: Action Link */}
+                <div className="mt-2 sm:mt-0">
+                   <Link to="#" className="text-gray-500 underline text-sm hover:text-gray-800">
+                     จัดการ
+                   </Link>
+                </div>
+
+              </div>
             </div>
+            // --- จบส่วนที่เพิ่มใหม่ ---
           ) : (
             <div className="text-center text-gray-400 mt-20">
-              {/* <p>User List Content goes here</p> */}
+              <p>User List Content goes here</p>
             </div>
           )}
         </div>
-
       </div>
 
-      <div className="w-full">
+      <div className="w-full mt-auto">
         <Footer />
       </div>
-
-    </div> 
+    </div>
   );
 }
 
