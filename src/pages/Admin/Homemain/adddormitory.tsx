@@ -86,8 +86,16 @@ const Adddormitory: React.FC = () => {
                 })
             });
 
-            if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
-            console.log('สร้างหอพักสำเร็จ:', formData);
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message ||'ไม่สามารถบันทึกข้อมูลได้');
+            }
+
+            if (result.dormitory_id) {
+                localStorage.setItem('dormitoryId', result.dormitory_id)
+                console.log('สร้างหอพักสำเร็จ:', formData);
+            }
             window.location.href = "/Homemain/utilitycalculation";
         } catch (err: unknown) {
             if (err instanceof Error) {
