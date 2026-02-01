@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { Layers, Trash2 } from 'lucide-react'; 
-
-// Mock Components (ถ้า path ของคุณถูกแล้ว ให้ใช้ import เดิมของคุณได้เลย)
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
 
 interface FloorData {
-  id: number;
+  id: string;
   floorNumber: number;
   roomCount: string;
 }
 
 const FloorSetup = () => {
+  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
   // --- States ---
   const [totalFloorsInput, setTotalFloorsInput] = useState('');
   const [floors, setFloors] = useState<FloorData[]>([]);
@@ -27,30 +33,32 @@ const FloorSetup = () => {
     { id: 6, label: 'สถานะห้อง' },
   ];
 
+  const reIndexFloors = (list: FloorData[]) => {
+    return list.map((item, index) => ({
+      ...item,
+      floorNumber: index + 1
+    }));
+  };
+
   // ฟังก์ชันสร้างรายการชั้น
   const handleGenerateFloors = () => {
     const num = parseInt(totalFloorsInput);
-    if (!isNaN(num) && num > 0) {
-      // จำกัดไม่ให้เกิน 30 ชั้นตาม UX ที่เขียนไว้
-      if (num > 30) {
-        alert("จำนวนชั้นสูงสุดไม่เกิน 30 ชั้น");
-        return;
-      }
-      
-      const newFloors: FloorData[] = [];
-      for (let i = 1; i <= num; i++) {
-        newFloors.push({
-          id: Date.now() + i,
-          floorNumber: i,
-          roomCount: '' // เริ่มต้นเป็นค่าว่าง
-        });
-      }
-      setFloors(newFloors);
+    if (isNaN(num) || num <= 0) return;
+    if (num > 30) {
+      alert("จำนวนชั้นสูงสุดไม่เกิน 30 ชั้น");
+      return;
     }
-  };
+    
+    const newFloors: FloorData[] = Array.from({ length: num }, (_, i) => ({
+      id: `temp-${Date.now()}-${i}`,
+      floorNumber: i + 1,
+      roomCount: ''
+    }));
+    setFloors(newFloors);
+  }
 
   // ฟังก์ชันอัปเดตจำนวนห้อง
-  const handleRoomCountChange = (id: number, val: string) => {
+  const handleRoomCountChange = (id: string, val: string) => {
     if (!/^\d*$/.test(val)) return; // รับเฉพาะตัวเลข
     setFloors(prev => prev.map(f =>
       f.id === id ? { ...f, roomCount: val } : f
@@ -58,36 +66,63 @@ const FloorSetup = () => {
   };
 
   // ฟังก์ชันลบชั้น
-  const handleDeleteFloor = (id: number) => {
-    // ลบแล้วอาจจะต้อง Re-index เลขชั้นใหม่หรือไม่? 
-    // ใน Code นี้แค่ลบออกไปเฉยๆ ถ้าต้องการให้เลขชั้นเรียงใหม่ต้อง map index ใหม่ครับ
-    setFloors(prev => prev.filter(f => f.id !== id));
+  const handleDeleteFloor = (id: string) => {
+    const filtered = floors.filter(f => f.id !== id);
+    setFloors(reIndexFloors(filtered));
   };
 
   // ฟังก์ชันตรวจสอบก่อนไปหน้าถัดไป
   const handleNextStep = async () => {
-    // 1. ตรวจสอบว่ามีชั้นหรือไม่
     if (floors.length === 0) return;
 
-    // 2. ตรวจสอบว่าทุกชั้นกรอกจำนวนห้องหรือยัง
-    const incompleteFloors = floors.filter(f => !f.roomCount || parseInt(f.roomCount) === 0);
-    
-    if (incompleteFloors.length > 0) {
-      alert(`กรุณาระบุจำนวนห้องให้ครบทุกชั้น (ชั้นที่ยังไม่ระบุ: ${incompleteFloors.map(f => f.floorNumber).join(', ')})`);
+    const incomplete = floors.some(f => !f.roomCount || parseInt(f.roomCount) <= 0);
+    if (incomplete) {
+      alert("กรุณาระบุจำนวนห้องให้ครบทุกชั้น (ต้องมากกว่า 0)");
       return;
     }
 
     setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const dormitoryId = localStorage.getItem('dormitoryId');
+
+      const response = await fetch(`${API_BASE}/api/floors/floor-setup`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          dormitoryId: dormitoryId,
+          floors: floors.map(f => ({
+            floor_number: f.floorNumber,
+            room_count: parseInt(f.roomCount)
+          }))
+        })
+      });
+
+      if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
+
+      alert('บันทึกโครงสร้างอาคารสำเร็จ');
+      window.location.href = "/homemain/roomsetup"; 
+    } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message);
+    } finally {
+      setLoading(false);
+    }
 
     try {
-      // ดึง Dormitory ID จากหน้าแรก (สมมติว่าเก็บไว้ใน localStorage)
-      const dormId = localStorage.getItem('currentDormId') || '1';
+      const token = localStorage.getItem('token');
+      const dormitoryId = localStorage.getItem('dormitoryId');
 
-      const response = await fetch('/api/floor-setup', {
+      const response = await fetch(`${API_BASE}/api/floors/floor-setup`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
-          dormId,
+          dormitoryId,
           floors: floors.map(f => ({
             floor_number: f.floorNumber,
             room_count: parseInt(f.roomCount)
@@ -98,8 +133,6 @@ const FloorSetup = () => {
       if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลชั้นได้');
 
       alert('บันทึกข้อมูลสำเร็จ!');
-      // ไปหน้าผังห้อง (Step 4)
-      //window.location.href = '/homemain/roomlayout'; 
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);
     } finally {
@@ -272,6 +305,5 @@ const FloorSetup = () => {
       <Footer />
     </div>
   );
-}
-
+};
 export default FloorSetup;
