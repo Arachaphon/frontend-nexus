@@ -204,7 +204,12 @@ const RoomStatusSetup = () => {
             </div>
 
             {/* Floating Next Button */}
-            <div className="w-full max-w-5xl flex justify-end mt-8">
+            <div className="w-full max-w-5xl flex justify-between mt-8">
+                <a href="/homemain/roomprice">
+                    <button className="px-6 py-2.5 text-gray-500 hover:text-gray-700 font-medium text-sm transition-colors flex items-center gap-2">
+                    กลับ
+                    </button>
+                </a>
                 <button 
                     className="bg-[#78716c] hover:bg-[#5f5955] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium"
                 >
