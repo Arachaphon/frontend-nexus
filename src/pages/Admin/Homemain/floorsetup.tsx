@@ -3,13 +3,7 @@ import { Layers, Trash2 } from 'lucide-react';
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
-declare global {
-  interface Window {
-    __ENV__: {
-      API_BASE: string;
-    };
-  }
-}
+const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
 interface FloorData {
   id: string;

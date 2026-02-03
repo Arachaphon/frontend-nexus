@@ -1,45 +1,26 @@
-import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react'; // ใช้ icon ถังขยะที่มีอยู่แล้ว
-
-// Mock Components (ใช้ import เดิมของคุณ)
+import React, { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react'; 
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
+const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+
 interface Room {
-  id: number;
+  id: string;
   number: string;
   isActive: boolean;
 }
 
 interface FloorData {
-  id: number;
+  id: string;
   floorNumber: number;
   rooms: Room[];
 }
 
-const FloorSetup = () => {
-  // --- States ---
-  // จำลองข้อมูลเริ่มต้นให้เหมือนในรูปภาพ (ชั้น 1 และ ชั้น 2)
-  const [floors, setFloors] = useState<FloorData[]>([
-    {
-      id: 1,
-      floorNumber: 1,
-      rooms: [
-        { id: 101, number: '101', isActive: true },
-        { id: 102, number: '102', isActive: true },
-      ]
-    },
-    {
-      id: 2,
-      floorNumber: 2,
-      rooms: [
-        { id: 201, number: '201', isActive: true },
-        { id: 202, number: '202', isActive: true },
-      ]
-    }
-  ]);
-  
+const RoomSetup = () => {
+  const [floors, setFloors] = useState<FloorData[]>([]);
   const [loading, setLoading] = useState(false);
+  const dormitoryId = localStorage.getItem('dormitoryId');
 
   const steps = [
     { id: 1, label: 'การคิดค่าน้ำ / ค่าไฟ' },
@@ -50,10 +31,78 @@ const FloorSetup = () => {
     { id: 6, label: 'สถานะห้อง' },
   ];
 
-  // --- Functions สำหรับจัดการ UI ส่วนกลาง ---
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!dormitoryId) return;
 
+        const floorRes = await fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const floorResult = await floorRes.json();
+
+        const roomRes = await fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const roomResult = await roomRes.json();
+
+        if (floorResult.success && roomResult.success) {
+          const mappedFloors = floorResult.data.map((f: any) => ({
+            id: f.id,
+            floorNumber: f.floor_number,
+            rooms: roomResult.data
+              .filter((r: any) => r.floor_id === f.id) 
+              .map((r: any) => ({
+                id: r.id,
+                number: r.room_number,
+                isActive: r.is_active === 1
+              }))
+          }));
+          setFloors(mappedFloors);
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+    fetchData();
+  }, [dormitoryId]);
+
+  // --- Functions สำหรับจัดการ UI ส่วนกลาง ---
+  const handleSave = async () => {
+    const token = localStorage.getItem('token');
+    const dormitoryId = localStorage.getItem('dormitoryId');
+    setLoading(true);
+    try {
+
+      const response = await fetch(`${API_BASE}/api/rooms/room-setup`,{
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          dormitoryId: dormitoryId,
+          floors: floors
+        })
+      });
+
+      const result =await response.json();
+      if(result.success) {
+        alert('บันทึกข้อมูลห้องเรียบร้อย');
+        window.location.href = '/homemain/roomprice';
+      } else {
+        alert(result.message);
+      } 
+    } catch (error) {
+      console.error('Error saving room data:', error);
+      alert('เกิดข้อผิดพลาด');
+    } finally {
+      setLoading(false);
+    }
+  };
   // เปลี่ยนเลขห้อง
-  const handleRoomNumberChange = (floorId: number, roomId: number, val: string) => {
+  const handleRoomNumberChange = (floorId: string, roomId: string, val: string) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
       return {
@@ -64,7 +113,7 @@ const FloorSetup = () => {
   };
 
   // Toggle เปิด/ปิด การใช้งานห้อง
-  const toggleRoomActive = (floorId: number, roomId: number) => {
+  const toggleRoomActive = (floorId: string, roomId: string) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
       return {
@@ -75,7 +124,7 @@ const FloorSetup = () => {
   };
 
   // ลบห้อง
-  const handleDeleteRoom = (floorId: number, roomId: number) => {
+  const handleDeleteRoom = (floorId: string, roomId: string) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
       return {
@@ -86,33 +135,30 @@ const FloorSetup = () => {
   };
 
   // เพิ่มห้องใหม่ในชั้นนั้นๆ
-  const handleAddRoom = (floorId: number) => {
+  const handleAddRoom = (floorId: string) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
       const nextNum = f.floorNumber * 100 + (f.rooms.length + 1);
       return {
         ...f,
-        rooms: [...f.rooms, { id: Date.now(), number: nextNum.toString(), isActive: true }]
+        rooms: [...f.rooms, { id: crypto.randomUUID(), number: nextNum.toString(), isActive: true }]
       };
     }));
   };
 
-  // เพิ่มชั้นใหม่ (ปุ่มสีเทาเข้มด้านล่าง)
   const handleAddFloor = () => {
     const nextFloorNum = floors.length + 1;
-    setFloors([
-      ...floors,
-      {
-        id: Date.now(),
-        floorNumber: nextFloorNum,
-        rooms: [
-          { id: Date.now() + 1, number: `${nextFloorNum}01`, isActive: true }
-        ]
-      }
-    ]);
+      setFloors([
+        ...floors,
+        {
+          id: crypto.randomUUID(), // ใช้ UUID แทน Date.now() เพื่อให้เป็น string ตาม interface
+          floorNumber: nextFloorNum,
+          rooms: [
+            { id: crypto.randomUUID(), number: `${nextFloorNum}01`, isActive: true }
+          ]
+        }
+      ]);
   };
-
-
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
@@ -240,8 +286,16 @@ const FloorSetup = () => {
               กลับ
             </button>
           </a>
-          <button className="bg-[#78716c] hover:bg-[#5f5955] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium">
-            ถัดไป
+          <button
+            onClick={handleSave}
+            disabled={floors.length === 0 || loading}
+            className={`px-10 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center gap-2 ${
+            floors.length > 0
+              ? 'bg-[#76736e] hover:bg-[#5e5b57] text-white'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+            >
+            ถัดไป  
           </button>
         </div>
       </div>
@@ -253,4 +307,4 @@ const FloorSetup = () => {
   );
 }
 
-export default FloorSetup;
+export default RoomSetup;
