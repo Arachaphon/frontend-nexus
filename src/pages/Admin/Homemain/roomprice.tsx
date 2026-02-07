@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect,useState } from 'react';
 import { X } from 'lucide-react'; // ไอคอนปิด
-
+import { useNavigate } from 'react-router-dom';
 // Mock Components (ใช้ import เดิมของคุณ)
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
+
+const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
 interface Room {
   id: number;
@@ -20,28 +22,10 @@ interface FloorData {
 
 const RoomPriceSetup = () => {
   // --- States ---
-  const [floors, setFloors] = useState<FloorData[]>([
-    {
-      id: 1,
-      floorNumber: 1,
-      rooms: [
-        { id: 101, number: '101', price: 0, isSelected: false },
-        { id: 102, number: '102', price: 0, isSelected: false },
-        { id: 103, number: '103', price: 0, isSelected: false },
-        { id: 104, number: '104', price: 0, isSelected: false },
-      ]
-    },
-    {
-      id: 2,
-      floorNumber: 2,
-      rooms: [
-        { id: 201, number: '201', price: 0, isSelected: false },
-        { id: 202, number: '202', price: 0, isSelected: false },
-        { id: 203, number: '203', price: 0, isSelected: false },
-      ]
-    }
-  ]);
-
+  const [floors, setFloors] = useState<FloorData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const dormitoryId = localStorage.getItem('dormitoryId');
+  const navigate = useNavigate();
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [priceInput, setPriceInput] = useState('');
@@ -56,7 +40,44 @@ const RoomPriceSetup = () => {
   ];
 
   // --- Functions ---
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!dormitoryId) return;
 
+        const floorRes = await fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const floorResult = await floorRes.json();
+
+        const roomRes = await fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const roomResult = await roomRes.json();
+
+        if (floorResult.success && roomResult.success) {
+          const mappedFloors = floorResult.data.map((f: any) => ({
+            id: f.id,
+            floorNumber: f.floor_number,
+            rooms: roomResult.data
+              .filter((r: any) => r.floor_id === f.id) 
+              .map((r: any) => ({
+                id: r.id,
+                number: r.room_number,
+                price: r.current_rent_price || 0,
+                isActive: r.is_active === 1,
+                isSelected: false
+              }))
+          }));
+          setFloors(mappedFloors);
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+    fetchData();
+  }, [dormitoryId]);
   // เลือกห้องเดี่ยว
   const toggleSelectRoom = (floorId: number, roomId: number) => {
     setFloors(prev => prev.map(f => {
@@ -97,19 +118,67 @@ const RoomPriceSetup = () => {
   };
 
   // บันทึกราคาจาก Modal
-  const handleConfirmPrice = () => {
-    const newPrice = parseFloat(priceInput);
-    if (isNaN(newPrice) || newPrice < 0) {
-      alert("กรุณาระบุราคาที่ถูกต้อง");
-      return;
+// ในไฟล์ roomprice.tsx
+
+const handleConfirmPrice = async () => {
+  const newPrice = parseFloat(priceInput);
+  if (isNaN(newPrice) || newPrice < 0) {
+    alert("กรุณาระบุราคาที่ถูกต้อง");
+    return;
+  }
+
+  // ดึง ID ของห้องที่ถูกเลือกทั้งหมด
+  const selectedRoomIds = floors.flatMap(f => 
+    f.rooms.filter(r => r.isSelected).map(r => r.id)
+  );
+
+  setLoading(true);
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE}/api/rooms/update-prices`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        roomIds: selectedRoomIds,
+        price: newPrice
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // เมื่อบันทึกสำเร็จ ให้ Update UI
+      setFloors(prev => prev.map(f => ({
+        ...f,
+        rooms: f.rooms.map(r => 
+          r.isSelected ? { ...r, price: newPrice, isSelected: false } : r
+        )
+      })));
+      setIsModalOpen(false);
+      alert("บันทึกราคาสำเร็จ!");
+    } else {
+      alert("เกิดข้อผิดพลาด: " + result.message);
     }
+  } catch (error) {
+    console.error('Update price error:', error);
+    alert("ไม่สามารถติดต่อ Server ได้");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    setFloors(prev => prev.map(f => ({
-      ...f,
-      rooms: f.rooms.map(r => r.isSelected ? { ...r, price: newPrice, isSelected: false } : r)
-    })));
-
-    setIsModalOpen(false);
+  const handleNextStep = () => {
+    const hasUnsetPrice = floors.some(f => f.rooms.some(r => r.price <= 0));
+    
+    if (hasUnsetPrice) {
+      if (!confirm("บางห้องยังไม่ได้ระบุราคา คุณต้องการดำเนินการต่อหรือไม่?")) {
+        return;
+      }
+    }
+    navigate('/homemain/roomstatus'); 
   };
 
   return (
@@ -225,7 +294,9 @@ const RoomPriceSetup = () => {
               กลับ
             </button>
           </a>
-          <button className="bg-[#78716c] hover:bg-[#5f5955] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium">
+          <button 
+            onClick={handleNextStep}
+            className="bg-[#78716c] hover:bg-[#5f5955] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium">
             ถัดไป
           </button>
         </div>

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Check, PlayCircle } from 'lucide-react'; // เพิ่มการ import icon
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
 const HomeFinish = () => {
-  const [activeTab, setActiveTab] = useState<'dormitory' | 'users'>('dormitory');
+  const dormitoryName = localStorage.getItem('dormitoryName') || 'หอพักของคุณ';
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,7 +14,11 @@ const HomeFinish = () => {
       navigate('/login');
     }
   }, [navigate]);
-
+  
+  const handleStartUsage = () => {
+    console.log("กำลังเข้าสู่ระบบจัดการหอพัก...");
+    navigate('/homemain'); 
+  };
   return (
     <div className="flex flex-col min-h-screen">
       <C_HomeMain />
@@ -40,10 +44,7 @@ const HomeFinish = () => {
               {/* ปุ่มเริ่มต้นใช้งาน */}
               <button
                 className="bg-[#78716c] hover:bg-[#5f5955] text-white px-6 py-3 rounded-lg shadow-sm transition-colors font-medium flex items-center gap-2"
-                onClick={() => {
-                   // ใส่ Logic เมื่อกดปุ่มนี้ เช่น โหลดข้อมูล หรือ ไปหน้า Dashboard
-                   console.log("Start using...");
-                }}
+                onClick={handleStartUsage}
               >
                 <PlayCircle size={20} className="fill-white text-[#78716c]" />
                 เริ่มต้นใช้งาน
