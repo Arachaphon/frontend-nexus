@@ -103,10 +103,10 @@ const HomeMain = () => {
         {/* Content Section */}
         <div className="mt-6 flex-grow w-full"> 
           {activeTab === 'dormitory' ? (
-            /* แก้ไขตรงนี้: ใช้ grid เพื่อให้เรียงซ้ายขวา และปรับ max-width ออก */
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
-              {/* ตัวอย่างการใช้ map (สมมติว่าคุณมีตัวแปร dormitories) */}
+              
               {dormitories.map((dorm) => (
                 <div key={dorm.id} className="w-full border border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
                   {/* Header */}
@@ -126,16 +126,16 @@ const HomeMain = () => {
                         <div className="flex gap-2 flex-grow">
                             <div className="border border-gray-400 px-2 py-2 flex flex-col items-center flex-1">
                                 <div className="text-gray-800">
-                                    <span className="text-lg font-medium">{dorm.vacant}</span>
-                                    <span className="text-sm">/{dorm.total}</span>
+                                    <span className="text-lg font-medium">{dorm.vacant_rooms}</span>
+                                    <span className="text-sm">/{dorm.total_rooms}</span>
                                 </div>
                                 <span className="text-[10px] text-gray-500">ห้องว่าง</span>
                             </div>
                             <div className="border border-gray-400 px-2 py-2 flex flex-col items-center flex-1">
                                 <div className="text-gray-800">
-                                    <span className="text-lg font-medium">{dorm.bills}</span>
+                                    <span className="text-lg font-medium">0</span>
                                 </div>
-                                <span className="text-[10px] text-gray-500">บิลค้าง</span>
+                                <span className="text-[10px] text-gray-500">บิลค้างชำระ</span>
                             </div>
                         </div>
                     </div>
