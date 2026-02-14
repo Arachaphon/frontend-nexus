@@ -101,61 +101,55 @@ const HomeMain = () => {
         </div>
 
         {/* Content Section */}
-        <div className="mt-6 flex-grow w-full flex justify-center items-start">
+        <div className="mt-6 flex-grow w-full"> 
           {activeTab === 'dormitory' ? (
-              dormitories.map((dorm) => (
-              // --- ส่วนที่เพิ่มใหม่: การ์ดหอพัก ---
-                <div key={dorm.id}
-                  className="w-full max-w-3xl border border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
-                  {/* Card Header */}
+            /* แก้ไขตรงนี้: ใช้ grid เพื่อให้เรียงซ้ายขวา และปรับ max-width ออก */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              
+              {/* ตัวอย่างการใช้ map (สมมติว่าคุณมีตัวแปร dormitories) */}
+              {dormitories.map((dorm) => (
+                <div key={dorm.id} className="w-full border border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
+                  {/* Header */}
                   <div className="border-b border-gray-300 px-4 py-3">
                     <h3 className="text-xl text-gray-700 font-normal">{dorm.name}</h3>
                   </div>
                   
-                  {/* Card Body */}
-                  <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-                    
-                    {/* Left: Icon */}
-                    <div className="bg-[#0e4b3a] p-3 rounded-md">
-                      {/* ไอคอนตึก (Building Icon) */}
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h11V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-
-                    {/* Center: Stats */}
-                    <div className="flex gap-6">
-                        {/* Box 1: Vacancy */}
-                        <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
-                            <div className="text-gray-800">
-                                <span className="text-2xl font-medium">{dorm.vacant_rooms}</span>
-                                <span className="text-sm mx-1">/</span>
-                                <span className="text-sm">{dorm.total_rooms}</span>
-                            </div>
-                            <span className="text-xs text-gray-500 mt-1">ห้องว่าง / ทั้งหมด</span>
+                  {/* Body */}
+                  <div className="p-6 flex flex-col items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 w-full">
+                        <div className="bg-[#0e4b3a] p-3 rounded-md">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h11V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+                          </svg>
                         </div>
 
-                        {/* Box 2: Outstanding Bills */}
-                        <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
-                            <div className="text-gray-800">
-                                <span className="text-2xl font-medium">0</span>
+                        <div className="flex gap-2 flex-grow">
+                            <div className="border border-gray-400 px-2 py-2 flex flex-col items-center flex-1">
+                                <div className="text-gray-800">
+                                    <span className="text-lg font-medium">{dorm.vacant}</span>
+                                    <span className="text-sm">/{dorm.total}</span>
+                                </div>
+                                <span className="text-[10px] text-gray-500">ห้องว่าง</span>
                             </div>
-                            <span className="text-xs text-gray-500 mt-1">บิลค้างชำระ</span>
+                            <div className="border border-gray-400 px-2 py-2 flex flex-col items-center flex-1">
+                                <div className="text-gray-800">
+                                    <span className="text-lg font-medium">{dorm.bills}</span>
+                                </div>
+                                <span className="text-[10px] text-gray-500">บิลค้าง</span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Right: Action Link */}
-                    <div className="mt-2 sm:mt-0">
-                      <Link to="#" className="text-gray-500 underline text-sm hover:text-gray-800">
+                    <div className="w-full text-right">
+                      <Link to={`/manage/${dorm.id}`} className="text-gray-500 underline text-sm hover:text-gray-800">
                         จัดการ
                       </Link>
                     </div>
-
                   </div>
                 </div>
-              ))
-            // --- จบส่วนที่เพิ่มใหม่ ---
-            ) : (
+              ))}
+            </div>
+          ) : (
             <div className="text-center text-gray-400 mt-20">
               <p>User List Content goes here</p>
             </div>
