@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+interface CHomeMainProps {
+  title?: string; // เครื่องหมาย ? แปลว่า ส่งหรือไม่ส่งก็ได้
+}
 
-export default function DormitoryLayout() {
+export default function DormitoryLayout({ title }: CHomeMainProps) {
     const navigate = useNavigate();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [username, setUsername] = useState('Loading...');
@@ -86,7 +89,7 @@ export default function DormitoryLayout() {
 
             <div className="bg-emerald-900 text-white py-2 px-6 shadow-md z-10">
                 <div className="container mx-auto">
-                    <h1 className="text-xl font-medium tracking-wide">Dormitory</h1>
+                    <h1 className="text-xl font-medium tracking-wide">{title || 'Dormitory'}</h1>
                 </div>
             </div>
         </div>

@@ -17,6 +17,7 @@ import RoomLayoutSetup from './pages/Admin/Homemain/roomsetup.tsx';
 import RoomPriceSetup from './pages/Admin/Homemain/roomprice.tsx';
 import RoomStatusSetup from './pages/Admin/Homemain/roomstatus.tsx';
 import RoomFinish from './pages/Admin/Homemain/homefinish.tsx';
+import Manage from './pages/Admin/Managedorm/manage.tsx';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
       <Route path="/homemain/roomprice" element={<RoomPriceSetup />} />
       <Route path="/homemain/roomstatus" element={<RoomStatusSetup />} />
       <Route path="/homemain/homefinish" element={<RoomFinish />} />
+      <Route path="/managedorm/manage" element={<Manage />} />
     </Routes>
   );
 }
