@@ -128,13 +128,14 @@ const handleConfirmPrice = async () => {
   }
 
   // ดึง ID ของห้องที่ถูกเลือกทั้งหมด
-  const selectedRoomIds = floors.flatMap(f => 
+  const selectedRoomId = floors.flatMap(f => 
     f.rooms.filter(r => r.isSelected).map(r => r.id)
   );
 
   setLoading(true);
   try {
     const token = localStorage.getItem('token');
+    const dormitoryId = localStorage.getItem('dormitoryId');
     const response = await fetch(`${API_BASE}/api/rooms/update-prices`, {
       method: 'PATCH',
       headers: {
@@ -142,8 +143,9 @@ const handleConfirmPrice = async () => {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        roomIds: selectedRoomIds,
-        price: newPrice
+        roomId: selectedRoomId,
+        price: newPrice,
+        dormitoryId: dormitoryId
       })
     });
 

@@ -3,17 +3,54 @@ import { Link, useNavigate } from 'react-router-dom';
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
+const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+
 const HomeMain = () => {
   const [activeTab, setActiveTab] = useState('dormitory');
+  const [dormitories, setDormitories] = useState<any[]>([]);
+  const [loading,setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const session = localStorage.getItem('userSession');
     if (!session) {
       navigate('/login');
+      return;
     }
-  }, [navigate]);
 
+    const fetchDormitories= async () => { 
+      try {
+        const session = localStorage.getItem('userSession');
+        if (!session) return;
+        
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE}/api/dormitories/list`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.error("Token ไม่ถูกต้องหรือหมดอายุ");
+            navigate('/login');
+          }
+          return; 
+        }
+
+        const result = await response.json();
+        if (result.success) {
+          setDormitories(result.data); 
+        }
+      } catch (error) {
+        console.error("Error fetching dormitories:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  fetchDormitories();
+}, [navigate]);
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
       <C_HomeMain />
@@ -66,56 +103,59 @@ const HomeMain = () => {
         {/* Content Section */}
         <div className="mt-6 flex-grow w-full flex justify-center items-start">
           {activeTab === 'dormitory' ? (
-            // --- ส่วนที่เพิ่มใหม่: การ์ดหอพัก ---
-            <div className="w-full max-w-3xl border border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
-              {/* Card Header */}
-              <div className="border-b border-gray-300 px-4 py-3">
-                <h3 className="text-xl text-gray-700 font-normal">A</h3>
-              </div>
-              
-              {/* Card Body */}
-              <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-                
-                {/* Left: Icon */}
-                <div className="bg-[#0e4b3a] p-3 rounded-md">
-                   {/* ไอคอนตึก (Building Icon) */}
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h11V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
-                   </svg>
-                </div>
-
-                {/* Center: Stats */}
-                <div className="flex gap-6">
-                    {/* Box 1: Vacancy */}
-                    <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
-                        <div className="text-gray-800">
-                            <span className="text-2xl font-medium">2</span>
-                            <span className="text-sm mx-1">/</span>
-                            <span className="text-sm">2</span>
-                        </div>
-                        <span className="text-xs text-gray-500 mt-1">ห้องว่าง / ทั้งหมด</span>
+              dormitories.map((dorm) => (
+              // --- ส่วนที่เพิ่มใหม่: การ์ดหอพัก ---
+                <div key={dorm.id}
+                  className="w-full max-w-3xl border border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
+                  {/* Card Header */}
+                  <div className="border-b border-gray-300 px-4 py-3">
+                    <h3 className="text-xl text-gray-700 font-normal">{dorm.name}</h3>
+                  </div>
+                  
+                  {/* Card Body */}
+                  <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                    
+                    {/* Left: Icon */}
+                    <div className="bg-[#0e4b3a] p-3 rounded-md">
+                      {/* ไอคอนตึก (Building Icon) */}
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h11V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+                      </svg>
                     </div>
 
-                    {/* Box 2: Outstanding Bills */}
-                    <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
-                        <div className="text-gray-800">
-                            <span className="text-2xl font-medium">0</span>
+                    {/* Center: Stats */}
+                    <div className="flex gap-6">
+                        {/* Box 1: Vacancy */}
+                        <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
+                            <div className="text-gray-800">
+                                <span className="text-2xl font-medium">{dorm.vacant_rooms}</span>
+                                <span className="text-sm mx-1">/</span>
+                                <span className="text-sm">{dorm.total_rooms}</span>
+                            </div>
+                            <span className="text-xs text-gray-500 mt-1">ห้องว่าง / ทั้งหมด</span>
                         </div>
-                        <span className="text-xs text-gray-500 mt-1">บิลค้างชำระ</span>
+
+                        {/* Box 2: Outstanding Bills */}
+                        <div className="border border-gray-400 px-6 py-2 flex flex-col items-center justify-center min-w-[120px]">
+                            <div className="text-gray-800">
+                                <span className="text-2xl font-medium">0</span>
+                            </div>
+                            <span className="text-xs text-gray-500 mt-1">บิลค้างชำระ</span>
+                        </div>
                     </div>
-                </div>
 
-                {/* Right: Action Link */}
-                <div className="mt-2 sm:mt-0">
-                   <Link to="#" className="text-gray-500 underline text-sm hover:text-gray-800">
-                     จัดการ
-                   </Link>
-                </div>
+                    {/* Right: Action Link */}
+                    <div className="mt-2 sm:mt-0">
+                      <Link to="#" className="text-gray-500 underline text-sm hover:text-gray-800">
+                        จัดการ
+                      </Link>
+                    </div>
 
-              </div>
-            </div>
+                  </div>
+                </div>
+              ))
             // --- จบส่วนที่เพิ่มใหม่ ---
-          ) : (
+            ) : (
             <div className="text-center text-gray-400 mt-20">
               <p>User List Content goes here</p>
             </div>
