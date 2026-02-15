@@ -17,8 +17,15 @@ import RoomLayoutSetup from './pages/Admin/Homemain/roomsetup.tsx';
 import RoomPriceSetup from './pages/Admin/Homemain/roomprice.tsx';
 import RoomStatusSetup from './pages/Admin/Homemain/roomstatus.tsx';
 import RoomFinish from './pages/Admin/Homemain/homefinish.tsx';
-import Manage from './pages/Admin/Managedorm/manage.tsx';
+import Manage from './pages/Admin/Managedorm/room/manage.tsx';
+import RoomDetail from './pages/Admin/Managedorm/room/roomdetail.tsx';
+import AddContract from './pages/Admin/Managedorm/room/addcontract.tsx';
 
+const Placeholder = ({ title }: { title: string }) => (
+  <div className="p-10 text-2xl font-bold text-gray-400">
+    หน้า {title} (กำลังพัฒนา)
+  </div>
+);
 function App() {
   return (
     <Routes>
@@ -37,7 +44,18 @@ function App() {
       <Route path="/homemain/roomprice" element={<RoomPriceSetup />} />
       <Route path="/homemain/roomstatus" element={<RoomStatusSetup />} />
       <Route path="/homemain/homefinish" element={<RoomFinish />} />
-      <Route path="/managedorm/manage" element={<Manage />} />
+      <Route path="/manage" element={<Manage />} />
+
+
+      {/* --- เพิ่ม Route สำหรับเมนูอื่นๆ ใน Sidebar (กันจอขาว) --- */}
+      {/* คุณค่อยๆ สร้างไฟล์จริงมาแทนที่ Placeholder ทีหลังได้ครับ */}
+      <Route path="/repair" element={<Placeholder title="แจ้งซ่อม" />} />
+      <Route path="/report" element={<Placeholder title="รายงาน" />} />
+      <Route path="/meter" element={<Placeholder title="จดมิเตอร์" />} />
+      <Route path="/billing" element={<Placeholder title="ออกบิล" />} />
+      <Route path="/settings" element={<Placeholder title="ตั้งค่า" />} />
+      <Route path="/manage/room/:roomId" element={<RoomDetail />} />
+      <Route path="/manage/room/:roomId/addcontract" element={<AddContract />} />
     </Routes>
   );
 }
