@@ -91,21 +91,37 @@ export default function AddContract() {
                             <label className="block text-xs font-semibold text-gray-700 mb-1">เงินประกัน <span className="text-red-500">*</span></label>
                             <div className="flex items-center border border-gray-300 rounded overflow-hidden">
                             <input 
-                                type="number" 
-                                placeholder=""
-                                value={deposit}
-                                onChange={(e) => setDeposit(e.target.value === '' ? '' : Number(e.target.value))}
-                                className="w-full px-3 py-2 text-sm text-gray-800 focus:outline-none" 
+                            type="number" 
+                            min="0" // 1. กำหนดค่าต่ำสุดเป็น 0
+                            placeholder="" 
+                            className="w-full px-3 py-2 text-sm text-gray-800 focus:outline-none"
+                            onKeyDown={(e) => {
+                                // 2. ป้องกันการกดปุ่มเครื่องหมายลบ (-) และตัว e (exponential)
+                                if (e.key === '-' || e.key === 'e') {
+                                e.preventDefault();
+                                }
+                            }}
                             />
                             <span className="bg-gray-50 px-3 py-2 text-xs text-gray-500 border-l border-gray-300">บาท</span>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">ค่าเช่าต่อเดือน <span className="text-red-500">*</span></label>
-                            <div className="flex items-center border border-gray-300 rounded overflow-hidden">
-                            <input type="number" placeholder="" className="w-full px-3 py-2 text-sm text-gray-800 focus:outline-none" />
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">ค่าเช่าต่อเดือน <span className="text-red-500">*</span></label>
+                        <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+                            <input 
+                            type="number" 
+                            min="0" // 1. กำหนดค่าต่ำสุดเป็น 0
+                            placeholder="" 
+                            className="w-full px-3 py-2 text-sm text-gray-800 focus:outline-none"
+                            onKeyDown={(e) => {
+                                // 2. ป้องกันการกดปุ่มเครื่องหมายลบ (-) และตัว e (exponential)
+                                if (e.key === '-' || e.key === 'e') {
+                                e.preventDefault();
+                                }
+                            }}
+                            />
                             <span className="bg-gray-50 px-3 py-2 text-xs text-gray-500 border-l border-gray-300">บาท</span>
-                            </div>
+                        </div>
                         </div>
 
                         {/* เงินจอง */}
@@ -141,12 +157,15 @@ export default function AddContract() {
                         <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div> 
                         
                         <h4 className="text-sm font-bold text-gray-800 mb-4">สรุปยอดชำระ</h4>
-                        <div className="flex justify-between items-center mb-2 text-sm">
-                            <span className="text-gray-500">เงินประกัน</span>
-                            <span className="font-medium">{numDeposit.toLocaleString()} บาท</span>
-                        </div>
+                    <div className="flex justify-between items-center mb-2 text-sm">
+                        <span className="text-gray-500">เงินประกัน</span>
+                        {/* ใช้ Math.max(0, numDeposit) เพื่อล็อคค่าไม่ให้ต่ำกว่า 0 */}
+                        <span className="font-medium">
+                            {Math.max(0, numDeposit).toLocaleString()} บาท
+                        </span>
+                    </div>
                         <div className="flex justify-between items-center mb-3 text-sm border-b border-gray-100 pb-3">
-                            <span className="text-gray-500">หัก เงินจอง</span>
+                            <span className="text-gray-500">เงินจอง</span>
                             <span className="font-medium text-red-500">-{numBooking.toLocaleString()} บาท</span>
                         </div>
                         <div className="flex justify-between items-center text-sm font-bold">
@@ -177,6 +196,7 @@ export default function AddContract() {
                     </div>
                     <div className="mb-8">
                         <label className="block text-xs font-semibold text-gray-700 mb-1">ที่อยู่</label>
+                        <p className="text-xs text-gray-400 mt-1">สำหรับแสดงบนใบแจ้งหนี้/ใบเสร็จ</p>
                         <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                     </div>
 
@@ -202,7 +222,7 @@ export default function AddContract() {
                     <div className="mb-8">
                         <label className="block text-xs font-semibold text-gray-700 mb-1">Note</label>
                         <textarea rows={3} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"></textarea>
-                        <p className="text-[10px] text-gray-400 mt-1">ข้อความนี้จะแสดงที่รายงาน - ผู้เช่าปัจจุบัน</p>
+                        <p className="text-xs text-gray-400 mt-1">ข้อความนี้จะแสดงที่รายงาน - ผู้เช่าปัจจุบัน</p>
                     </div>
 
                     {/* ปุ่มต่อไป */}
