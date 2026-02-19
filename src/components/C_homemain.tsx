@@ -36,11 +36,9 @@ export default function DormitoryLayout({ title }: CHomeMainProps) {
     }, [navigate]); // ใส่เพียง navigate เพื่อให้ทำงานแค่ตอน Mount ครั้งแรก
 
     const handleLogout = () => {
-        if (window.confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
-            localStorage.removeItem('userSession');
-            localStorage.removeItem('rememberPassword');
-            navigate('/');
-        }
+        localStorage.removeItem('userSession');
+        localStorage.removeItem('rememberPassword');
+        navigate('/');
     };
 
     return (
