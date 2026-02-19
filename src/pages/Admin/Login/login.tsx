@@ -86,10 +86,8 @@ const LoginPage = () => {
           localStorage.setItem('userSession', JSON.stringify(result.user));
         }
 
-        alert('เข้าสู่ระบบสำเร็จ');
         navigate('/homemain'); 
       } else {
-        // แสดงข้อความ Error ที่ส่งมาจาก Backend (Hono)
         throw new Error(result.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
       }
 
