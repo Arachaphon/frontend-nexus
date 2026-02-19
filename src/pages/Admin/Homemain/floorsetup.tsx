@@ -97,7 +97,6 @@ const FloorSetup = () => {
 
       if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
 
-      alert('บันทึกโครงสร้างอาคารสำเร็จ');
       window.location.href = "/homemain/roomsetup"; 
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);

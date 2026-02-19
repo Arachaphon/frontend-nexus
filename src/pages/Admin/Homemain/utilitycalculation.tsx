@@ -98,7 +98,6 @@ const UtilityCalculation = () => {
 
       if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
       
-      alert('บันทึกการตั้งค่าสำเร็จ');
       // ย้ายไปหน้าถัดไป (เช่น บัญชีธนาคาร)
       window.location.href = "/homemain/bankaccountconfig"; 
     } catch (err: unknown) {

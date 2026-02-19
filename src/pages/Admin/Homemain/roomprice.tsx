@@ -160,7 +160,6 @@ const handleConfirmPrice = async () => {
         )
       })));
       setIsModalOpen(false);
-      alert("บันทึกราคาสำเร็จ!");
     } else {
       alert("เกิดข้อผิดพลาด: " + result.message);
     }

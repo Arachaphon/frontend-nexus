@@ -66,7 +66,6 @@ const ProfileSettings: React.FC = () => {
 
       // ใน profilesettings.tsx
       if (response.ok) {
-        alert('บันทึกข้อมูลสำเร็จ');
         
         // อัปเดตข้อมูลใน LocalStorage ให้เป็นชื่อใหม่ด้วย
         const session = localStorage.getItem('userSession');
@@ -118,7 +117,6 @@ const ProfileSettings: React.FC = () => {
         throw new Error(result.message || 'เปลี่ยนรหัสผ่านไม่สำเร็จ');
       }
 
-      alert('เปลี่ยนรหัสผ่านสำเร็จ');
       setPassword({ current: '' , new: '' , confirm: ''});
     } catch (error : unknown) {
       alert(error instanceof Error ? error.message : 'เกิดข้อผิดพลาด');

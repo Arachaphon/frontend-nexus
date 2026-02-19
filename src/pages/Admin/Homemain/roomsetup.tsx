@@ -87,7 +87,7 @@ const RoomSetup = () => {
 
       const result = await response.json();
       if(result.success) {
-        alert('บันทึกข้อมูลห้องเรียบร้อย');
+
         window.location.href = '/homemain/roomprice';
       } else {
         alert(result.message);
