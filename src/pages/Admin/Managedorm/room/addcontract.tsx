@@ -227,9 +227,11 @@ export default function AddContract() {
 
                     {/* ปุ่มต่อไป */}
                     <div className="flex justify-end pt-4 border-t border-gray-100">
-                        <button className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
-                            ต่อไป
-                        </button>
+                        <Link to = {`/manage/room/${roomId}/addcontract2`}>
+                            <button  className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
+                                ต่อไป
+                            </button>
+                        </Link>
                     </div>
 
                 </div>

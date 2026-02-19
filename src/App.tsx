@@ -20,6 +20,7 @@ import RoomFinish from './pages/Admin/Homemain/homefinish.tsx';
 import Manage from './pages/Admin/Managedorm/room/manage.tsx';
 import RoomDetail from './pages/Admin/Managedorm/room/roomdetail.tsx';
 import AddContract from './pages/Admin/Managedorm/room/addcontract.tsx';
+import AdvanceRent from './pages/Admin/Managedorm/room/addcontract2.tsx';
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-10 text-2xl font-bold text-gray-400">
@@ -45,6 +46,7 @@ function App() {
       <Route path="/homemain/roomstatus" element={<RoomStatusSetup />} />
       <Route path="/homemain/homefinish" element={<RoomFinish />} />
       <Route path="/manage" element={<Manage />} />
+      
 
 
       {/* --- เพิ่ม Route สำหรับเมนูอื่นๆ ใน Sidebar (กันจอขาว) --- */}
@@ -56,6 +58,7 @@ function App() {
       <Route path="/settings" element={<Placeholder title="ตั้งค่า" />} />
       <Route path="/manage/room/:roomId" element={<RoomDetail />} />
       <Route path="/manage/room/:roomId/addcontract" element={<AddContract />} />
+      <Route path="/manage/room/:roomId/addcontract2" element={<AdvanceRent />} />        
     </Routes>
   );
 }

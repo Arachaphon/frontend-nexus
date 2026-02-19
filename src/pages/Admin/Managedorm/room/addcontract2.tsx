@@ -1,0 +1,170 @@
+import React, { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Home, ChevronRight, Calendar } from 'lucide-react';
+
+// Import Components
+import C_HomeMain from '../../../../components/C_homemain';
+import Footer from '../../../../components/Footerhomemain';
+import Sidebar from '../../../../components/Sidebar';
+
+export default function AdvanceRent() {
+  const { roomId } = useParams();
+
+  // State สำหรับเก็บข้อมูลฟอร์มหน้าค่าเช่าล่วงหน้า
+  const [billingCycle, setBillingCycle] = useState('10-1010');
+  const [description, setDescription] = useState('ค่าเช่าห้อง 10-10-1010 - 10-10-1011');
+  const [amount, setAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [note, setNote] = useState('');
+
+  return (
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+      
+      {/* Sidebar อยู่คงที่ */}
+      <Sidebar />
+      
+      {/* พื้นที่ขวา */}
+      <div className="flex-1 flex flex-col min-w-0">
+        
+        {/* Header อยู่คงที่ */}
+        <C_HomeMain title="หอพัก: A" />
+
+        {/* ส่วนเนื้อหาหลัก */}
+        <div className="flex-1 overflow-y-auto">
+            <div className="px-4 md:px-10 py-6 max-w-5xl mx-auto">
+            
+                {/* Breadcrumb */}
+                <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 flex-wrap">
+                    <Link to="/homemain" className="hover:text-emerald-600 flex items-center">
+                        <Home className="w-4 h-4" />
+                    </Link>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <Link to={`/manage/room/${roomId}`} className="hover:text-emerald-600">
+                        ข้อมูล ห้อง {roomId || '101'}
+                    </Link>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-500">เพิ่มสัญญา</span>
+                </div>
+
+                {/* Stepper (อัปเดตให้อยู่สเต็ปที่ 2) */}
+                <div className="flex justify-center items-center mb-10">
+                    <div className="flex flex-col items-center relative z-10">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center font-bold text-sm mb-2 shadow-sm">1</div>
+                        <span className="text-gray-400 font-medium text-sm">สัญญา</span>
+                    </div>
+                    
+                    <div className="h-1 bg-gray-200 w-24 mx-2 -mt-6"></div>
+                    
+                    <div className="flex flex-col items-center relative z-10">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm mb-2 shadow-md">2</div>
+                        <span className="text-emerald-600 font-semibold text-sm">ค่าเช่าล่วงหน้า</span>
+                    </div>
+                    
+                    <div className="h-1 bg-gray-200 w-24 mx-2 -mt-6"></div>
+
+                    <div className="flex flex-col items-center relative z-10 opacity-40">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm mb-2">3</div>
+                        <span className="text-gray-400 font-medium text-sm">มิเตอร์น้ำ-ไฟ</span>
+                    </div>
+                </div>
+
+                {/* Form Content */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                    
+                    {/* ส่วนหัวของฟอร์ม */}
+                    <div className="mb-6">
+                        <h3 className="text-lg font-bold text-gray-800">รับเงินค่าเช่าล่วงหน้า ตอนทำสัญญา</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                            ระบบจะคำนวณเงินค่าเช่าล่วงหน้าให้โดยอัตโนมัติ โดยคำนวณจากวันที่ทำสัญญาจนถึงวันสิ้นเดือน
+                        </p>
+                    </div>
+                    
+                    <hr className="border-gray-100 mb-8" />
+
+                    <div className="max-w-3xl">
+                        {/* รอบบิล */}
+                        <div className="mb-6 w-full md:w-1/3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">รอบบิล <span className="text-red-500">*</span></label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Calendar className="h-4 w-4 text-gray-400" />
+                                </div>
+                                <input 
+                                    type="text" 
+                                    value={billingCycle}
+                                    onChange={(e) => setBillingCycle(e.target.value)}
+                                    className="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" 
+                                />
+                            </div>
+                        </div>
+
+                        {/* รายละเอียด และ จำนวนเงิน */}
+                        <div className="flex flex-col md:flex-row gap-6 mb-6">
+                            <div className="flex-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">รายละเอียด <span className="text-red-500">*</span></label>
+                                <input 
+                                    type="text" 
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" 
+                                />
+                            </div>
+                            <div className="w-full md:w-1/3">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">จำนวนเงิน <span className="text-red-500">*</span></label>
+                                <div className="flex items-center border border-gray-300 rounded-md overflow-hidden focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
+                                    <input 
+                                        type="number" 
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        className="w-full px-3 py-2 text-sm text-gray-800 focus:outline-none"
+                                    />
+                                    <span className="bg-gray-100 px-3 py-2 text-sm text-gray-500 border-l border-gray-300">บาท</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ช่องทางชำระ (ในภาพ Label เขียนว่า จำนวนเงิน *) */}
+                        <div className="mb-6 w-full md:w-1/3">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">จำนวนเงิน <span className="text-red-500">*</span></label>
+                            <select 
+                                value={paymentMethod}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-white"
+                            >
+
+                            <option value="cash">เงินสด</option>
+                            <option value="bank">โอนเงินธนาคาร</option>
+                            </select>
+                        </div>
+
+                        {/* Note */}
+                        <div className="mb-10">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Note</label>
+                            <textarea 
+                                rows={4} 
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none"
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    {/* ปุ่ม Action ด้านล่าง */}
+                    <div className="flex justify-end items-center gap-3 pt-6 border-t border-gray-100">
+                        <button className="bg-white border border-gray-400 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-md transition-colors text-sm">
+                            ข้าม (ไม่รับเงินค่าเช่าล่วงหน้า)
+                        </button>
+                        <button className="bg-[#757069] hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors text-sm">
+                            บันทึกและไปขั้นตอนถัดไป
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        
+        <Footer />
+      </div>
+    </div>
+  );
+}
