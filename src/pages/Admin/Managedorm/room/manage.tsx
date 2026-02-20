@@ -85,7 +85,7 @@ export default function Manage() {
     },
     {
       label: 'จองล่วงหน้า',
-      value: statsData.pending,
+      value: statsData.occupied,
       unit: 'ห้อง',
       icon: <Calendar className="w-5 h-5" />,
       borderColor: 'border-orange-400',
