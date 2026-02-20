@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext,useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom'; // นำเข้า Link
 import { 
   LayoutGrid, 
@@ -19,9 +19,16 @@ interface LayoutContextType {
 }
 
 export default function Manage() {
+  const { id: dormitoryId } = useParams();
+  const API_BASE = window.__ENV__?.API_BASE
+  const [statsData, setStatsData] = useState({
+    total: 0,
+    vacant: 0,
+    occupied: 0,
+    pending: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
 
-  // ดึง context (ถ้ามี)
   const context = useOutletContext<LayoutContextType>();
   const setPageTitle = context ? context.setPageTitle : null;
 
@@ -29,15 +36,36 @@ export default function Manage() {
     if (setPageTitle) {
       setPageTitle('Manage Dormitory');
     }
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, [setPageTitle]);
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE}/api/dormitories/stats/${dormitoryId}`, {
+          headers: {
+            'Authorization' : `Bearer ${token}`
+          }
+        });
+        const result = await response.json();
+        if (result.success) {
+          setStatsData(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (dormitoryId) {
+      fetchStats()
+    }
+  }, [dormitoryId , setPageTitle]);
 
   // --- ข้อมูลจำลอง (Stats Cards) ---
   const stats = [
     {
       label: 'ห้องทั้งหมด',
-      value: 4,
+      value: statsData.total,
       unit: 'ห้อง',
       icon: <LayoutGrid className="w-5 h-5" />,
       borderColor: 'border-emerald-500', 
@@ -47,7 +75,7 @@ export default function Manage() {
     },
     {
       label: 'ห้องว่างทั้งหมด',
-      value: 4,
+      value: statsData.vacant,
       unit: 'ห้อง',
       icon: <CheckSquare className="w-5 h-5" />,
       borderColor: 'border-green-500',
@@ -57,7 +85,7 @@ export default function Manage() {
     },
     {
       label: 'จองล่วงหน้า',
-      value: 0,
+      value: statsData.pending,
       unit: 'ห้อง',
       icon: <Calendar className="w-5 h-5" />,
       borderColor: 'border-orange-400',
@@ -67,7 +95,7 @@ export default function Manage() {
     },
     {
       label: 'ค้างชำระ',
-      value: 0,
+      value: statsData.pending,
       unit: 'ห้อง',
       icon: <XCircle className="w-5 h-5" />,
       borderColor: 'border-red-400',
