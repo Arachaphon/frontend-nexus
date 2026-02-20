@@ -27,10 +27,10 @@
 ---
 
 ## 🛠 Tech Stack (Tools)
-- **Vue.js** – Framework สำหรับพัฒนา User Interface แบบ Reactive
+- **React** – Framework สำหรับพัฒนา User Interface แบบ Reactive
 - **Tailwind CSS** – สำหรับการออกแบบดีไซน์ที่รองรับทุกหน้าจอ (Responsive Design)
 - **TypeScript** – เพื่อเพิ่มประสิทธิภาพในการจัดการโครงสร้างข้อมูลและลดข้อผิดพลาด
-- **Supabase** – Backend-as-a-Service สำหรับระบบฐานข้อมูล (PostgreSQL) และ Authentication
+- **CloundFlare D1** – Backend-as-a-Service สำหรับระบบฐานข้อมูล (PostgreSQL) และ Authentication
 
 ---
 
@@ -52,7 +52,6 @@
 | บทบาท | คำอธิบาย |
 |---------|------------|
 | **Admin (เจ้าของหอพัก)** | มีสิทธิ์จัดการข้อมูลหอพักทั้งหมด ออกบิล ตรวจสอบรายได้ และจัดการคำขอแจ้งซ่อม |
-| **Tenant (ผู้เช่า)** | ดูรายละเอียดห้องพัก ตรวจสอบค่าใช้จ่ายรายเดือน แจ้งซ่อม และรับข่าวสาร |
 
 ---
 
