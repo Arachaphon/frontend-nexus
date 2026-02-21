@@ -141,7 +141,7 @@ const HomeMain = () => {
                     </div>
 
                     <div className="w-full text-right">
-                      <Link to={`/manage`} className="text-gray-500 underline text-sm hover:text-gray-800">
+                      <Link to={`/manage/${dorm.id}`} className="text-gray-500 underline text-sm hover:text-gray-800">
                         จัดการ
                       </Link>
                     </div>

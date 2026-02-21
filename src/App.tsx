@@ -57,6 +57,7 @@ function App() {
       <Route path="/meter" element={<Placeholder title="จดมิเตอร์" />} />
       <Route path="/billing" element={<Placeholder title="ออกบิล" />} />
       <Route path="/settings" element={<Placeholder title="ตั้งค่า" />} />
+      <Route path="/manage/:dormitoryId" element={<Manage />} />
       <Route path="/manage/room/:roomId" element={<RoomDetail />} />
       <Route path="/manage/room/:roomId/addcontract" element={<AddContract />} />
       <Route path="/manage/room/:roomId/addcontract2" element={<AdvanceRent />} />        

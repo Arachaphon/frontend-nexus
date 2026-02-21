@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useOutletContext,useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom'; // นำเข้า Link
+import { Link ,useOutletContext,useParams } from 'react-router-dom'; 
 import { 
   LayoutGrid, 
   CheckSquare, 
@@ -14,21 +13,36 @@ import C_HomeMain from '../../../../components/C_homemain';
 import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
+
+interface Room {
+  id: string;
+  room_number: string;
+  status: string;
+  current_rent_price: number;
+}
+
 interface LayoutContextType {
   setPageTitle: (title: string) => void;
 }
 
 export default function Manage() {
-  const { id: dormitoryId } = useParams();
-  const API_BASE = window.__ENV__?.API_BASE
+  const { dormitoryId } = useParams();
+  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
   const [statsData, setStatsData] = useState({
     total: 0,
     vacant: 0,
     occupied: 0,
     pending: 0
   });
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   const context = useOutletContext<LayoutContextType>();
   const setPageTitle = context ? context.setPageTitle : null;
 
@@ -37,25 +51,53 @@ export default function Manage() {
       setPageTitle('Manage Dormitory');
     }
     const fetchStats = async () => {
+      setIsLoading(true);
+
       try {
-        setIsLoading(true);
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE}/api/dormitories/stats/${dormitoryId}`, {
-          headers: {
-            'Authorization' : `Bearer ${token}`
-          }
-        });
-        const result = await response.json();
-        if (result.success) {
-          setStatsData(result.data);
+
+        if (!token) {
+          console.error('Authentication token not found.');
+          return;
         }
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        };
+
+        const [statsRes, roomsRes] = await Promise.all([
+          fetch(`${API_BASE}/api/dormitories/stats/${dormitoryId}`, { headers }),
+          fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, { headers })
+        ]);
+
+        if (!statsRes.ok || !roomsRes.ok) {
+          console.error('API request failed:', statsRes.status, roomsRes.status);
+          return;
+        }
+
+        const statsJson = await statsRes.json();
+        const roomsJson = await roomsRes.json();
+
+        if (statsJson.success) {
+          setStatsData(statsJson.data);
+        } else {
+          console.error('Stats API error:', statsJson.message);
+        }
+
+        if (roomsJson.success) {
+          setRooms(roomsJson.data);
+        } else {
+          console.error('Rooms API error:', roomsJson.message);
+        }
+
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('Unexpected error:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
+    console.log("Dormitory ID:", dormitoryId);
     if (dormitoryId) {
       fetchStats()
     }
@@ -105,13 +147,6 @@ export default function Manage() {
     },
   ];
 
-  // --- ข้อมูลจำลอง (Table Data) ---
-  const roomData = [
-    { id: '101', status: 'ว่าง' },
-    { id: '102', status: 'ว่าง' },
-    { id: '201', status: 'ว่าง' },
-    { id: '202', status: 'ว่าง' },
-  ];
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
@@ -183,14 +218,14 @@ export default function Manage() {
                   
                   {/* --- ส่วนที่แก้ไข: ต้องมี tbody และการวนลูป map --- */}
                   <tbody className="divide-y divide-gray-100">
-                    {roomData.map((room) => (
+                    {rooms.map((room) => (
                       <tr key={room.id} className="hover:bg-gray-50 transition-colors duration-150">
                         <td className="px-6 py-4 font-bold text-gray-700 text-center">
-                          {room.id}
+                          {room.room_number || 'N/A'}
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span className="bg-cyan-50 text-cyan-600 border border-cyan-100 px-3 py-1 rounded-full text-xs font-bold inline-block min-w-[60px]">
-                            {room.status}
+                            {room.status === 'vacant' ? 'ว่าง' : 'มีผู้เช่า'}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center text-gray-400">-</td>
