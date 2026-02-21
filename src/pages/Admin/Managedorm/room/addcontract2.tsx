@@ -153,7 +153,7 @@ export default function AdvanceRent() {
                     <div className="flex justify-end items-center gap-3 pt-6 border-t border-gray-100">
                         <Link to={`/manage/room/${roomId}/addcontract3`} className="text-sm text-gray-500 hover:text-gray-700">
                             <button className="bg-white border border-gray-400 text-gray-600 hover:bg-gray-50 font-medium py-2 px-4 rounded-md transition-colors text-sm">
-                                ข้าม (ไม่รับเงินค่าเช่าล่วงหน้า)
+                                ข้าม (ไม่รับเงินค่าเช่าล่วงหน้า.)
                             </button>
                         </Link>
                         <button className="bg-[#757069] hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-md shadow-sm transition-colors text-sm">
