@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import C_HomeMain from '../../../components/C_homemain'; 
 import Footer from '../../../components/Footerhomemain'; 
 
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
+
 interface FormData {
   name: string;
   address: string;
@@ -33,10 +41,7 @@ const Adddormitory: React.FC = () => {
     const { name, value, type } = e.target;
 
     // ตรวจสอบ: ถ้าเป็นตัวเลข ห้ามต่ำกว่า 0 (ห้ามติดลบ)
-    if (type === 'number' && value !== '' && Number(value) < 0) {
-      return; 
-    }
-
+    if (type === 'number' && value !== '' && Number(value) < 0) return;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     // ลบ Error ทันทีเมื่อมีการแก้ไขในช่องนั้น
@@ -56,7 +61,7 @@ const Adddormitory: React.FC = () => {
     if (!formData.name.trim()) newErrors.name = 'จำเป็นต้องกรอกชื่อหอพัก';
     if (!formData.address.trim()) newErrors.address = 'จำเป็นต้องกรอกที่อยู่';
     if (!formData.phone_number.trim()) newErrors.phone_number = 'จำเป็นต้องกรอกเบอร์โทรศัพท์';
-    if (formData.due_date === '') newErrors.due_Date = 'จำเป็นต้องระบุวันสุดท้ายของการชำระเงิน';
+    if (formData.due_date === '') newErrors.due_date = 'จำเป็นต้องระบุวันสุดท้ายของการชำระเงิน';
     if (formData.fine_per_day === '') newErrors.fine_per_day = 'จำเป็นต้องระบุค่าปรับ';
 
     if (Object.keys(newErrors).length > 0) {
@@ -65,15 +70,32 @@ const Adddormitory: React.FC = () => {
     } else {
         setLoading(true);
         try{
-            const response = await fetch('/api/adddormitory', {
+            const token = localStorage.getItem('token');
+            const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+
+            const response = await fetch(`${API_BASE}/api/dormitories/add`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    due_date: Number(formData.due_date),
+                    fine_per_day: Number(formData.fine_per_day)
+                })
             });
 
-            if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
+            const result = await response.json();
 
-            console.log('สร้างหอพักสำเร็จ:', formData);
+            if (!response.ok || !result.success) {
+                throw new Error(result.message ||'ไม่สามารถบันทึกข้อมูลได้');
+            }
+
+            if (result.dormitory_id) {
+                localStorage.setItem('dormitoryId', result.dormitory_id)
+                console.log('สร้างหอพักสำเร็จ:', formData);
+            }
             window.location.href = "/Homemain/utilitycalculation";
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -135,19 +157,19 @@ const Adddormitory: React.FC = () => {
                 <div className="flex flex-col">
                     <label className="mb-2 font-medium text-gray-700">เบอร์โทรศัพท์<span className="text-red-500">*</span></label>
                     <input 
-                        name="phone"
+                        name="phone_number"
                         value={formData.phone_number}
                         onChange={handleChange}
                         type="text" 
                         className={`w-full border ${errors.phone ? 'border-red-500' : 'border-gray-400'} rounded-lg h-12 px-4 focus:outline-none focus:border-[#0e4b3a] shadow-sm`}
                     />
-                    {errors.phone && <span className="text-red-500 text-xs mt-1">{errors.phone}</span>}
+                    {errors.phone && <span className="text-red-500 text-xs mt-1">{errors.phone_number}</span>}
                 </div>
 
                 <div className="flex flex-col">
                     <label className="mb-2 font-medium text-gray-700">เลขประจำตัวผู้เสียภาษี</label>
                     <input 
-                        name="taxId"
+                        name="tax_id"
                         value={formData.tax_id}
                         onChange={handleChange}
                         type="text" 
@@ -170,7 +192,7 @@ const Adddormitory: React.FC = () => {
                     <div className={`flex items-center w-full border ${errors.dueDate ? 'border-red-500' : 'border-gray-400'} rounded-lg h-12 overflow-hidden shadow-sm bg-white`}>
                         <div className="bg-gray-200 px-4 h-full flex items-center text-gray-600 border-r border-gray-400 text-sm">วันที่</div>
                         <input 
-                            name="dueDate"
+                            name="due_date"
                             value={formData.due_date}
                             onChange={handleChange}
                             type="number" 
@@ -179,14 +201,14 @@ const Adddormitory: React.FC = () => {
                             className="flex-grow px-4 focus:outline-none h-full"
                         />
                     </div>
-                    {errors.dueDate && <span className="text-red-500 text-xs mt-1">{errors.dueDate}</span>}
+                    {errors.dueDate && <span className="text-red-500 text-xs mt-1">{errors.due_date}</span>}
                 </div>
 
                 <div className="flex flex-col">
                     <label className="mb-2 font-medium text-gray-700">ค่าปรับชำระล่าช้าต่อวัน<span className="text-red-500">*</span></label>
-                    <div className={`flex items-center w-full border ${errors.finePerDay ? 'border-red-500' : 'border-gray-400'} rounded-lg h-12 overflow-hidden shadow-sm bg-white`}>
+                    <div className={`flex items-center w-full border ${errors.fine_per_day ? 'border-red-500' : 'border-gray-400'} rounded-lg h-12 overflow-hidden shadow-sm bg-white`}>
                         <input 
-                            name="finePerDay"
+                            name="fine_per_day"
                             value={formData.fine_per_day}
                             onChange={handleChange}
                             type="number" 
@@ -196,7 +218,7 @@ const Adddormitory: React.FC = () => {
                         />
                         <div className="bg-gray-200 px-4 h-full flex items-center text-gray-600 border-l border-gray-400 text-sm">บาท /วัน</div>
                     </div>
-                    {errors.finePerDay && <span className="text-red-500 text-xs mt-1">{errors.finePerDay}</span>}
+                    {errors.fine_per_day && <span className="text-red-500 text-xs mt-1">{errors.fine_per_day}</span>}
                 </div>
             </div>
         </div>

@@ -71,6 +71,9 @@ const LoginPage = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        if (result.token) {
+          localStorage.setItem('token',result.token);
+        }
         if (rememberMe) {
           localStorage.setItem('rememberUsername', formData.username);
           localStorage.setItem('rememberPassword', formData.password);
