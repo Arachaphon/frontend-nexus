@@ -42,6 +42,7 @@ export default function Manage() {
     pending: 0
   });
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [dormitoryName, setDormitoryName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const context = useOutletContext<LayoutContextType>();
   const setPageTitle = context ? context.setPageTitle : null;
@@ -66,9 +67,10 @@ export default function Manage() {
           'Content-Type': 'application/json'
         };
 
-        const [statsRes, roomsRes] = await Promise.all([
+        const [statsRes, roomsRes, dormRes] = await Promise.all([
           fetch(`${API_BASE}/api/dormitories/stats/${dormitoryId}`, { headers }),
-          fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, { headers })
+          fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, { headers }),
+          fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`, { headers })
         ]);
 
         if (!statsRes.ok || !roomsRes.ok) {
@@ -77,18 +79,21 @@ export default function Manage() {
         }
 
         const statsJson = await statsRes.json();
-        const roomsJson = await roomsRes.json();
-
         if (statsJson.success) {
           setStatsData(statsJson.data);
         } else {
           console.error('Stats API error:', statsJson.message);
         }
 
+        const roomsJson = await roomsRes.json();
         if (roomsJson.success) {
           setRooms(roomsJson.data);
         } else {
           console.error('Rooms API error:', roomsJson.message);
+        }
+        const dormJson = await dormRes.json();
+        if (dormRes.ok) {
+          setDormitoryName(dormJson.name);
         }
 
       } catch (error) {
@@ -157,7 +162,7 @@ export default function Manage() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Header สีเขียวด้านบน */}
-        <C_HomeMain title="หอพัก: A" />
+        <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
 
         <div className="flex-grow px-6 py-6">
             
