@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-// ตรวจสอบ path ของ component ให้ถูกต้องตามโครงสร้างโปรเจคของคุณ
 import C_HomeMain from '../../../components/C_homemain'; 
 import Footer from '../../../components/Footerhomemain'; 
+
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
 
 /**
  * Helper สำหรับดึงชื่อประเภทการคำนวณมาแสดงผล
@@ -24,7 +31,7 @@ const UtilityCalculation = () => {
 
   // --- States สำหรับค่าไฟ ---
   const [showElectricModal, setShowElectricModal] = useState(false);
-  const [electricCalcType, setElectricCalcType] = useState('meter_actual');
+  const [electricCalcType, setElectricCalcType] = useState('meter_min');
   const [electricPrice, setElectricPrice] = useState('');
   const [electricMinPrice, setElectricMinPrice] = useState('');
 
@@ -57,12 +64,35 @@ const UtilityCalculation = () => {
 
   const handleSaveAll = async () => {
     try {
-      const response = await fetch('/api/utility-settings', {
+      const dormitoryId = localStorage.getItem('dormitoryId'); 
+      
+      if (!dormitoryId) {
+        alert('ไม่พบข้อมูลหอพัก กรุณากลับไปเริ่มสร้างใหม่');
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+
+      const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+
+      const response = await fetch(`${API_BASE}/api/utilities/save-settings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
-          water: { type: waterCalcType, price: waterPrice, min: waterMinPrice },
-          electric: { type: electricCalcType, price: electricPrice, min: electricMinPrice }
+          dormitoryId: dormitoryId,
+          water: { 
+            type: waterCalcType, 
+            price: Number(waterPrice), 
+            min: waterMinPrice 
+          },
+          electric: { 
+            type: electricCalcType, 
+            price: Number(electricPrice), 
+            min: electricMinPrice 
+          }
         })
       });
 
@@ -251,8 +281,8 @@ const UtilityCalculation = () => {
                 <label className="text-sm font-medium text-gray-700">ประเภทการคิดเงิน <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <select value={electricCalcType} onChange={(e) => setElectricCalcType(e.target.value)} className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-600 appearance-none focus:outline-none focus:ring-1 focus:ring-stone-100 focus:border-stone-100">
-                    <option value="meter_actual">ตามมิเตอร์ที่ใช้จริง</option>
                     <option value="meter_min">ตามมิเตอร์แบบมีขั้นต่ำ</option>
+                    <option value="meter_actual">ตามมิเตอร์ที่ใช้จริง</option>
                     <option value="flat_rate">แบบเหมาจ่าย</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg></div>
