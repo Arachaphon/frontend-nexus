@@ -34,6 +34,7 @@ const BANK_OPTIONS = [
 const BankAccountConfig = () => {
   const navigate = useNavigate();
   const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  console.log("API_BASE inside component:", API_BASE);
   // --- States ---
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [paymentNote, setPaymentNote] = useState('');
@@ -73,7 +74,9 @@ const BankAccountConfig = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const bankData = await bankRes.json();
-      if (Array.isArray(bankData)) setBankAccounts(bankData);
+      if (Array.isArray(bankData)) {
+        setBankAccounts(bankData);
+      }
 
       const dormRes = await fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`,{
         headers: { 'Authorization': `Bearer ${token}` }
@@ -128,6 +131,10 @@ const BankAccountConfig = () => {
           account_name: accountName
         })
       });
+
+      if (!response.ok) {
+        throw new Error("API failed");
+      }
 
       const data = await response.json();
         if (data.success) {
