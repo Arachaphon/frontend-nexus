@@ -39,12 +39,33 @@ const RoomStatusSetup = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (!dormitoryId) return;
+
+            const token = localStorage.getItem("token");
+            if (!token) {
+                console.error("No token found");
+                return;
+            }
+
             setLoading(true);
             try {
                 const [fRes, rRes] = await Promise.all([
-                    fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`),
-                    fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`)
+                    fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }),
+                    fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    })
                 ]);
+
+                if (!fRes.ok || !rRes.ok) {
+                    console.error("API ERROR", fRes.status, rRes.status);
+                    return;
+                }
+
                 const floorResult = await fRes.json();
                 const roomResult = await rRes.json();
 
@@ -61,14 +82,16 @@ const RoomStatusSetup = () => {
                                 isSelected: false
                             }))
                     }));
+
                     setFloors(mapped);
                 }
             } catch (err) {
-                console.error('Fetch Error:', err);
+                console.error("Fetch crash:", err);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchData();
     }, [dormitoryId]);
 
@@ -95,9 +118,13 @@ const RoomStatusSetup = () => {
 
         setLoading(true);
         try {
+            const token = localStorage.getItem("token");
             const res = await fetch(`${API_BASE}/api/rooms/update-status`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
                 body: JSON.stringify({ roomId: selectedRoomId, status: newStatus, dormitoryId })
             });
             const result = await res.json();
