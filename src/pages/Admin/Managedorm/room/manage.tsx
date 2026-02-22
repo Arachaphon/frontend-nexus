@@ -241,7 +241,7 @@ export default function Manage() {
                         <td className="px-6 py-4 text-right">
                           {/* Link ที่ถูกต้อง ต้องอยู่ภายใน map เพื่อดึง room.id ได้ */}
                           <Link 
-                            to={`/manage/room/${room.id}`}
+                            to={`/manage/${dormitoryId}/room/${room.id}`}
                             className="text-gray-500 hover:text-emerald-600 underline text-xs font-medium transition-colors"
                           >
                             ข้อมูล

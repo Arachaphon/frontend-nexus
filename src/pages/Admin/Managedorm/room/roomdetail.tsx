@@ -1,20 +1,67 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Home,  ChevronRight } from 'lucide-react';
 import C_HomeMain from '../../../../components/C_homemain';
 import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
 export default function RoomDetail() {
   // รับค่า id ห้องจาก URL (เช่น 101)
+  const { dormitoryId } = useParams();
   const { roomId } = useParams();
+  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const [dormitoryName, setDormitoryName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      setIsLoading(true);
 
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        };
+
+       const dormRes = await fetch(
+          `${API_BASE}/api/dormitories/info/${dormitoryId}`,
+          { headers }
+        );
+
+        if (!dormRes.ok) {
+          console.error('Failed to fetch dormitory info');
+          return;
+        }
+
+        const dormJson = await dormRes.json();
+        setDormitoryName(dormJson.name);
+      } catch (error) {
+        console.error('Unexpected error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (dormitoryId) {
+      fetchRoomData();
+    }
+  }, [dormitoryId]);
+  
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
       <Sidebar />
       
       <div className="flex-1 flex flex-col min-w-0">
-        <C_HomeMain title="หอพัก: A" />
+        <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
 
         <div className="flex-grow px-6 py-6">
           
@@ -43,7 +90,7 @@ export default function RoomDetail() {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="font-semibold text-gray-700 mb-4 border-b pb-2">รายละเอียดสัญญา</h3>
                 <Link 
-                to={`/manage/room/${roomId}/addcontract`}
+                to={`/manage/${dormitoryId}/room/${roomId}/addcontract`}
                 className="w-full bg-emerald-400 hover:bg-emerald-500 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2"
                         >
            
