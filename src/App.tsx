@@ -22,6 +22,7 @@ import RoomDetail from './pages/Admin/Managedorm/room/roomdetail.tsx';
 import AddContract from './pages/Admin/Managedorm/room/addcontract.tsx';
 import AdvanceRent from './pages/Admin/Managedorm/room/addcontract2.tsx';
 import MeterReading from './pages/Admin/Managedorm/room/addcontract3.tsx';
+import RoomInfo from './pages/Admin/Managedorm/room/roominfo.tsx';
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-10 text-2xl font-bold text-gray-400">
@@ -61,7 +62,8 @@ function App() {
       <Route path="/manage/room/:roomId" element={<RoomDetail />} />
       <Route path="/manage/room/:roomId/addcontract" element={<AddContract />} />
       <Route path="/manage/room/:roomId/addcontract2" element={<AdvanceRent />} />        
-      <Route path="/manage/room/:roomId/addcontract3" element={<MeterReading />} />        
+      <Route path="/manage/room/:roomId/addcontract3" element={<MeterReading />} />   
+      <Route path="/manage/room/:roomId/roominfo" element={<RoomInfo />} />
     </Routes>
   );
 }
