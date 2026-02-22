@@ -67,15 +67,14 @@ export default function RoomDetail() {
           
           {/* Breadcrumb Navigation */}
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-            <Link to="/homemain" className="hover:text-emerald-600"><Home className="w-4 h-4" /></Link>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <Link to="/manage" className="hover:text-emerald-600">ห้อง</Link>
+            <Link to="#" className="hover:text-emerald-600"><Home className="w-4 h-4" /></Link>
+            <Link to={`/manage/room/${roomId}`} className="hover:text-emerald-600">ห้อง</Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <span className="text-gray-400">ข้อมูล ห้อง {roomId}</span>
           </div>
-
+          <hr />
           {/* Room Title & Status */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4 mb-8 mt-8">
             <h1 className="text-2xl font-bold text-gray-700">ห้อง : {roomId}</h1>
             <span className="bg-cyan-100 text-cyan-600 px-3 py-1 rounded-md text-sm font-bold shadow-sm">
               ว่าง

@@ -8,7 +8,7 @@ const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 const HomeMain = () => {
   const [activeTab, setActiveTab] = useState('dormitory');
   const [dormitories, setDormitories] = useState<any[]>([]);
-  const [loading,setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const HomeMain = () => {
       return;
     }
 
-    const fetchDormitories= async () => { 
+    const fetchDormitories = async () => { 
       try {
         const session = localStorage.getItem('userSession');
         if (!session) return;
@@ -51,6 +51,7 @@ const HomeMain = () => {
 
   fetchDormitories();
 }, [navigate]);
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
       <C_HomeMain />
@@ -67,7 +68,7 @@ const HomeMain = () => {
               className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
                 activeTab === 'dormitory'
                   ? 'text-[#0e4b3a] border-[#0e4b3a]'
-                  : 'text-gray-500 border-gray-300 hover:text-gray-700'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,7 +82,7 @@ const HomeMain = () => {
               className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
                 activeTab === 'users'
                   ? 'text-[#0e4b3a] border-[#0e4b3a]'
-                  : 'text-gray-500 border-gray-300 hover:text-gray-700'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
               }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,21 +93,22 @@ const HomeMain = () => {
           </div>
 
           <div className="mt-4 md:mt-0 w-[120px] flex justify-end">
-            <Link to="/homemain/adddormitory">
-              <button className="bg-[#7d7671] hover:bg-[#68625d] text-white px-6 py-3 rounded-md shadow-sm text-sm font-medium transition-colors">
-                เพิ่มหอพัก
-              </button>
-            </Link>
+            {/* ซ่อนปุ่มเพิ่มหอพักถ้าอยู่แท็บผู้ใช้งาน เพื่อให้สอดคล้องกับ UI */}
+            {activeTab === 'dormitory' && (
+              <Link to="/homemain/adddormitory">
+                <button className="bg-[#7d7671] hover:bg-[#68625d] text-white px-6 py-3 rounded-md shadow-sm text-sm font-medium transition-colors">
+                  เพิ่มหอพัก
+                </button>
+              </Link>
+            )}
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="mt-6 flex-grow w-full"> 
+        <div className="mt-2 flex-grow w-full"> 
           {activeTab === 'dormitory' ? (
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              
-              
               {dormitories.map((dorm) => (
                 <div key={dorm.id} className="w-full border border-gray-400 rounded-lg bg-white shadow-sm overflow-hidden">
                   {/* Header */}
@@ -149,10 +151,84 @@ const HomeMain = () => {
                 </div>
               ))}
             </div>
+
           ) : (
-            <div className="text-center text-gray-400 mt-20">
-              <p>User List Content goes here</p>
+
+            /* ---------------- ส่วนที่เพิ่มเข้ามาใหม่: แท็บจัดการผู้ใช้งาน ---------------- */
+            <div className="flex flex-col lg:flex-row gap-8 w-full mt-4">
+              
+              {/* ฝั่งซ้าย: คำอธิบาย */}
+              <div className="w-full lg:w-1/4 shrink-0">
+                <h2 className="text-lg font-bold text-gray-800 mb-2">เจ้าหน้าที่</h2>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  รายชื่อผู้ใช้งานระบบที่สามารถ<br className="hidden lg:block" />เข้าถึงข้อมูลของหอพัก
+                </p>
+              </div>
+
+              {/* ฝั่งขวา: การ์ดตาราง */}
+              <div className="w-full lg:w-3/4 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                
+                {/* ปุ่มเพิ่มผู้ใช้งาน */}
+                <div className="flex justify-end mb-4">
+                  <button className="bg-[#7d7671] hover:bg-[#68625d] text-white px-6 py-2 rounded-md shadow-sm text-sm font-medium transition-colors">
+                    เพิ่ม
+                  </button>
+                </div>
+
+                {/* ตารางข้อมูล */}
+                <div className="w-full rounded-md overflow-hidden text-sm">
+                  
+                  {/* หัวตาราง */}
+                  <div className="grid grid-cols-12 bg-[#e8e8e8] text-gray-700 py-3 px-4 font-medium items-center">
+                    <div className="col-span-1">#</div>
+                    <div className="col-span-4">ชื่อ / ตำแหน่ง</div>
+                    <div className="col-span-4">เบอร์ / อีเมล</div>
+                    <div className="col-span-2 text-center">เปิดใช้งาน</div>
+                    <div className="col-span-1 text-center">หอพัก</div>
+                  </div>
+
+                  {/* แถวข้อมูล (นำไป .map() ได้เลย) */}
+                  <div className="grid grid-cols-12 border-b border-gray-200 py-4 px-4 items-center bg-white">
+                    <div className="col-span-1 text-gray-800">1</div>
+                    
+                    <div className="col-span-4 flex flex-col gap-1">
+                      <span className="text-gray-800">Aos Sjdj</span>
+                      <span className="text-gray-500 text-xs">เจ้าของ</span>
+                    </div>
+                    
+                    <div className="col-span-4 flex flex-col gap-1">
+                      <span className="text-gray-800">0963505765</span>
+                      <span className="text-gray-500 text-xs">aofzakryp@gmail.com</span>
+                    </div>
+                    
+                    {/* ไอคอนติ๊กถูกเปิดใช้งาน */}
+                    <div className="col-span-2 flex justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    
+                    {/* หอพัก + ปุ่มแก้ไข */}
+                    <div className="col-span-1 flex justify-between items-center w-full pr-2">
+                      <div className="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-gray-800">A</span>
+                      </div>
+                      <button className="text-gray-600 text-xs hover:text-gray-900 transition-colors">
+                        แก้ไข
+                      </button>
+                    </div>
+                  </div>
+                  {/* จบแถวข้อมูล */}
+
+                </div>
+              </div>
+
             </div>
+            /* ------------------------------------------------------------------------- */
+            
           )}
         </div>
       </div>
