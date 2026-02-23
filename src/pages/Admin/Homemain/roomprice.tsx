@@ -1,7 +1,6 @@
-import React, { useEffect,useState } from 'react';
-import { X } from 'lucide-react'; // ไอคอนปิด
+import React, { useEffect, useState } from 'react';
+import { X } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
-// Mock Components (ใช้ import เดิมของคุณ)
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
@@ -26,6 +25,7 @@ const RoomPriceSetup = () => {
   const [loading, setLoading] = useState(false);
   const dormitoryId = localStorage.getItem('dormitoryId');
   const navigate = useNavigate();
+  
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [priceInput, setPriceInput] = useState('');
@@ -78,7 +78,7 @@ const RoomPriceSetup = () => {
     };
     fetchData();
   }, [dormitoryId]);
-  // เลือกห้องเดี่ยว
+
   const toggleSelectRoom = (floorId: number, roomId: number) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
@@ -89,7 +89,6 @@ const RoomPriceSetup = () => {
     }));
   };
 
-  // เลือกทั้งชั้น / ยกเลิกทั้งชั้น
   const handleSelectFloor = (floorId: number, selectAll: boolean) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
@@ -100,80 +99,72 @@ const RoomPriceSetup = () => {
     }));
   };
 
-  // นับจำนวนห้องที่เลือก
   const getSelectedCount = () => {
     return floors.reduce((acc, floor) => {
       return acc + floor.rooms.filter(r => r.isSelected).length;
     }, 0);
   };
 
-  // เปิด Modal
   const openPriceModal = () => {
     if (getSelectedCount() === 0) {
       alert("กรุณาเลือกห้องอย่างน้อย 1 ห้อง");
       return;
     }
-    setPriceInput(''); // รีเซ็ตค่า
+    setPriceInput('');
     setIsModalOpen(true);
   };
 
-  // บันทึกราคาจาก Modal
-// ในไฟล์ roomprice.tsx
-
-const handleConfirmPrice = async () => {
-  const newPrice = parseFloat(priceInput);
-  if (isNaN(newPrice) || newPrice < 0) {
-    alert("กรุณาระบุราคาที่ถูกต้อง");
-    return;
-  }
-
-  // ดึง ID ของห้องที่ถูกเลือกทั้งหมด
-  const selectedRoomId = floors.flatMap(f => 
-    f.rooms.filter(r => r.isSelected).map(r => r.id)
-  );
-
-  setLoading(true);
-  try {
-    const token = localStorage.getItem('token');
-    const dormitoryId = localStorage.getItem('dormitoryId');
-    const response = await fetch(`${API_BASE}/api/rooms/update-prices`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        roomId: selectedRoomId,
-        price: newPrice,
-        dormitoryId: dormitoryId
-      })
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      // เมื่อบันทึกสำเร็จ ให้ Update UI
-      setFloors(prev => prev.map(f => ({
-        ...f,
-        rooms: f.rooms.map(r => 
-          r.isSelected ? { ...r, price: newPrice, isSelected: false } : r
-        )
-      })));
-      setIsModalOpen(false);
-    } else {
-      alert("เกิดข้อผิดพลาด: " + result.message);
+  const handleConfirmPrice = async () => {
+    const newPrice = parseFloat(priceInput);
+    if (isNaN(newPrice) || newPrice < 0) {
+      alert("กรุณาระบุราคาที่ถูกต้อง");
+      return;
     }
-  } catch (error) {
-    console.error('Update price error:', error);
-    alert("ไม่สามารถติดต่อ Server ได้");
-  } finally {
-    setLoading(false);
-  }
-};
+
+    const selectedRoomId = floors.flatMap(f => 
+      f.rooms.filter(r => r.isSelected).map(r => r.id)
+    );
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const dormitoryId = localStorage.getItem('dormitoryId');
+      const response = await fetch(`${API_BASE}/api/rooms/update-prices`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          roomId: selectedRoomId,
+          price: newPrice,
+          dormitoryId: dormitoryId
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setFloors(prev => prev.map(f => ({
+          ...f,
+          rooms: f.rooms.map(r => 
+            r.isSelected ? { ...r, price: newPrice, isSelected: false } : r
+          )
+        })));
+        setIsModalOpen(false);
+      } else {
+        alert("เกิดข้อผิดพลาด: " + result.message);
+      }
+    } catch (error) {
+      console.error('Update price error:', error);
+      alert("ไม่สามารถติดต่อ Server ได้");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNextStep = () => {
     const hasUnsetPrice = floors.some(f => f.rooms.some(r => r.price <= 0));
-    
     if (hasUnsetPrice) {
       if (!confirm("บางห้องยังไม่ได้ระบุราคา คุณต้องการดำเนินการต่อหรือไม่?")) {
         return;
@@ -182,7 +173,7 @@ const handleConfirmPrice = async () => {
     navigate('/homemain/roomstatus'); 
   };
 
-return (
+  return (
     <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
       <C_HomeMain />
 
@@ -226,7 +217,7 @@ return (
           </div>
         </div>
 
-        {/* --- ROOM CONTENT --- */}
+        {/* --- MAIN CONTENT: Floor Cards --- */}
         <div className="w-full max-w-5xl space-y-6 mb-10">
           {floors.map((floor) => (
             <div key={floor.id} className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] p-6">
@@ -262,14 +253,14 @@ return (
           ))}
         </div>
 
-        {/* Step Navigation Buttons */}
+        {/* Navigation Buttons (Back/Next) */}
         <div className="w-full max-w-5xl flex justify-between mt-4 mb-10">
-          <button onClick={() => navigate(-1)} className="px-6 py-2.5 text-gray-500 hover:text-gray-700 font-medium text-sm transition-colors">กลับ</button>
+          <button onClick={() => navigate('/homemain/roomsetup')} className="px-6 py-2.5 text-gray-500 hover:text-gray-700 font-medium text-sm flex items-center gap-2">กลับ</button>
           <button onClick={handleNextStep} className="bg-[#78716c] hover:bg-[#5f5955] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium">ถัดไป</button>
         </div>
       </div>
 
-      {/* --- STICKY ACTION BAR (จุดที่แก้) --- */}
+      {/* --- STICKY BOTTOM ACTION BAR (จุดที่ปรับแก้) --- */}
       <div className="sticky bottom-0 w-full bg-white border-t border-gray-200 py-4 px-6 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6">
           <span className="text-lg text-gray-800 font-medium">จำนวนห้องที่เลือก {getSelectedCount()} ห้อง</span>
@@ -282,10 +273,10 @@ return (
         </div>
       </div>
 
-      {/* Footer (จะต่อท้าย Action Bar เมื่อเลื่อนลงสุด) */}
+      {/* Footer: อยู่ต่อท้าย Sticky Bar ตามธรรมชาติ */}
       <Footer />
 
-      {/* --- MODAL --- */}
+      {/* --- MODAL (Popup) --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
@@ -300,9 +291,10 @@ return (
                   type="number"
                   value={priceInput}
                   onChange={(e) => setPriceInput(e.target.value)}
-                  className="flex-1 block w-full rounded-l-md border-gray-300 border px-3 py-2 focus:border-[#0e4b3a] focus:ring-1 focus:ring-[#0e4b3a] outline-none"
+                  className="flex-1 block w-full rounded-l-md border-gray-300 border px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-[#0e4b3a] focus:ring-1 focus:ring-[#0e4b3a] focus:outline-none sm:text-sm"
+                  placeholder="0.00"
                 />
-                <span className="inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-200 px-3 text-gray-500 text-sm">บาท /เดือน</span>
+                <span className="inline-flex items-center rounded-r-md border border-l-0 border-gray-300 bg-gray-200 px-3 text-gray-500 sm:text-sm">บาท /เดือน</span>
               </div>
             </div>
             <div className="flex justify-end px-6 py-4 bg-gray-50 border-t border-gray-100">
