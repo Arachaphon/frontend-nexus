@@ -34,7 +34,6 @@ const Sidebar = () => {
   const menuItems: MenuItem[] = [
     { id: 'rooms', label: 'ห้อง', icon: Home, path: '/manage' },
     { id: 'repair', label: 'แจ้งซ่อม', icon: Wrench, path: '/repair' },
-    { id: 'report', label: 'รายงาน', icon: Copy, path: '/report' },
     { id: 'meter', label: 'จดมิเตอร์', icon: Edit3, path: '/meter' },
     { 
       id: 'billing', 
