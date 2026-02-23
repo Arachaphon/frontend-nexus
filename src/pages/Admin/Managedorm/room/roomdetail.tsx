@@ -27,6 +27,7 @@ export default function RoomDetail() {
   const [dormitoryName, setDormitoryName] = useState<string>('');
   const [room, setRoom] = useState<Room | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const fetchRoomData = async () => {
       setIsLoading(true);
@@ -81,18 +82,26 @@ export default function RoomDetail() {
 
         <div className="flex-grow px-6 py-6">
           
-          {/* Breadcrumb Navigation */}
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-            <Link to="/homemain" className="hover:text-emerald-600"><Home className="w-4 h-4" /></Link>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <Link to="/manage" className="hover:text-emerald-600">ห้อง</Link>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-400">ข้อมูล ห้อง {room?.room_number}</span>
+          {/* --- ส่วนที่แก้ไข: Breadcrumb Navigation --- */}
+          <div className="mb-8 w-full">
+            <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
+              {/* ลบลูกศรออก และรวมรูปบ้านกับคำว่า "ห้อง" เป็นลิงก์เดียวกัน เพื่อคลิกกลับไปหน้า Manage หอพัก */}
+              <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600 flex items-center gap-1.5">
+                <Home className="w-4 h-4" />
+                <span>ห้อง</span>
+              </Link>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+              {/* ดึงเลขห้องมาแสดง ถ้ากำลังโหลดให้แสดง roomId หรือ ... ไปก่อน */}
+              <span className="text-gray-700 font-medium">ข้อมูล ห้อง {room?.room_number || roomId || '...'}</span>
+            </div>
+            {/* เส้นคั่น */}
+            <hr className="border-gray-300 w-full" />
           </div>
+          {/* --------------------------------------- */}
 
           {/* Room Title & Status */}
           <div className="flex items-center gap-4 mb-8">
-            <h1 className="text-2xl font-bold text-gray-700">ห้อง : {room?.room_number}</h1>
+            <h1 className="text-2xl font-bold text-gray-700">ห้อง : {room?.room_number || roomId || '...'}</h1>
             <span className="bg-cyan-100 text-cyan-600 px-3 py-1 rounded-md text-sm font-bold shadow-sm">
               ว่าง
             </span>

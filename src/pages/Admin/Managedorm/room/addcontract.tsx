@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'; 
+import { useParams, Link, useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
 import { Home, ChevronRight } from 'lucide-react';
 
 // Import Components
@@ -8,55 +8,120 @@ import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
 export default function AddContract() {
-  const { roomId } = useParams();
+  const { dormitoryId, roomId } = useParams();
+  const navigate = useNavigate(); // ใช้สำหรับเปลี่ยนหน้าหลังจาก Validate ผ่าน
+  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
-  // State สำหรับคำนวณเงิน (เริ่มต้นเป็น 0 หรือค่าว่างตามที่ขอ)
+  const [dormitoryName, setDormitoryName] = useState<string>('');
+  const [roomNumber, setRoomNumber] = useState<string>(''); 
+
+  useEffect(() => {
+    const fetchInfo = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token || !dormitoryId) return;
+
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        };
+
+        const dormRes = await fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`, { headers });
+        const dormData = await dormRes.json();
+        if (dormRes.ok) {
+          setDormitoryName(dormData.name);
+        }
+
+        if (roomId) {
+            const roomsRes = await fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, { headers });
+            const roomsData = await roomsRes.json();
+            if (roomsRes.ok && roomsData.success) {
+              const currentRoom = roomsData.data.find((room: any) => String(room.id) === String(roomId));
+              if (currentRoom) {
+                setRoomNumber(currentRoom.room_number);
+              }
+            }
+        }
+
+      } catch (error) {
+        console.error('Error fetching info:', error);
+      }
+    };
+
+    fetchInfo();
+  }, [dormitoryId, roomId, API_BASE]);
+
+  // --- States สำหรับฟอร์ม ---
+  const [checkInDate, setCheckInDate] = useState('');
   const [deposit, setDeposit] = useState<number | ''>(''); 
+  const [monthlyRent, setMonthlyRent] = useState<number | ''>(''); // เพิ่ม state ค่าเช่าต่อเดือน
   const [booking, setBooking] = useState<number | ''>('');
+  const [paymentMethod, setPaymentMethod] = useState('');
   
-  // คำนวณยอดรวม (แปลงค่าว่างเป็น 0 เพื่อคำนวณ)
+  // ข้อมูลผู้เช่า
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [idCard, setIdCard] = useState('');
+
+  // State เก็บ Error
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const numDeposit = deposit === '' ? 0 : deposit;
   const numBooking = booking === '' ? 0 : booking;
   const totalToPay = Math.max(0, numDeposit - numBooking);
 
+  // ฟังก์ชันตรวจสอบความถูกต้องของฟอร์ม
+  const handleNext = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!checkInDate) newErrors.checkInDate = 'กรุณาระบุวันที่เข้าพัก';
+    if (deposit === '') newErrors.deposit = 'กรุณาระบุเงินประกัน';
+    if (monthlyRent === '') newErrors.monthlyRent = 'กรุณาระบุค่าเช่าต่อเดือน';
+    if (!paymentMethod) newErrors.paymentMethod = 'กรุณาเลือกช่องทางการชำระเงิน';
+    if (!firstName.trim()) newErrors.firstName = 'กรุณาระบุชื่อจริง';
+    if (!lastName.trim()) newErrors.lastName = 'กรุณาระบุนามสกุล';
+    if (!phone.trim()) newErrors.phone = 'กรุณาระบุเบอร์ติดต่อ';
+    if (!idCard.trim()) newErrors.idCard = 'กรุณาระบุเลขบัตรประชาชน / พาสปอร์ต';
+
+    setErrors(newErrors);
+
+    // ถ้าไม่มี error เลย ให้ไปยังหน้าถัดไป
+    if (Object.keys(newErrors).length === 0) {
+      navigate(`/manage/${dormitoryId}/room/${roomId}/addcontract2`);
+    }
+  };
+
   return (
-    // 1. ใช้ h-screen และ overflow-hidden เพื่อล็อคความสูงหน้าจอไม่ให้ล้น
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       
-      {/* Sidebar อยู่คงที่ */}
       <Sidebar />
       
-      {/* พื้นที่ขวา */}
       <div className="flex-1 flex flex-col min-w-0">
         
-        {/* Header อยู่คงที่ */}
-        <C_HomeMain title="หอพัก: A" />
+        <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
 
-        {/* 2. ส่วนเนื้อหาหลัก: ใส่ overflow-y-auto เพื่อให้ Scroll ได้เฉพาะตรงนี้ */}
         <div className="flex-1 overflow-y-auto">
             
-            {/* 3. คลุมด้วย px-6 py-6 เพื่อให้ระยะขอบตรงกับหน้า Manage */}
             <div className="flex-grow px-6 py-6">
                 <div className="mb-8 w-full">
                     <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
-                        <Link to="#" className="hover:text-emerald-600 flex items-center gap-1.5">
+                        <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600 flex items-center gap-1.5">
                             <Home className="w-4 h-4" />
                             <span>ห้อง</span>
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
-                        <Link to={`/manage/room/${roomId}`} className="hover:text-emerald-600">
-                            ข้อมูล ห้อง {roomId || '101'}
+                        <Link to={`/manage/${dormitoryId}/room/${roomId}`} className="hover:text-emerald-600">
+                            ข้อมูล ห้อง {roomNumber || roomId || '...'}
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-700 font-medium">เพิ่มสัญญา</span>
                     </div>
-                    {/* เส้นคั่น */}
                     <hr className="border-gray-300 w-full" />
                 </div>
-                {/* 4. จัดฟอร์มและ Stepper ให้อยู่กึ่งกลางหน้าจอ */}
+
                 <div className="max-w-5xl mx-auto mt-8">
                     
-                    {/* Stepper */}
                     <div className="flex justify-center items-center mb-10">
                         <div className="flex flex-col items-center relative z-10">
                             <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm mb-2 shadow-md">1</div>
@@ -76,36 +141,43 @@ export default function AddContract() {
                         </div>
                     </div>
 
-                    {/* Form Content */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                         
-                        {/* --- สัญญารายเดือน --- */}
                         <h3 className="text-lg font-bold text-gray-700 mb-6 border-b pb-2">สัญญารายเดือน</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
                         
-                            {/* วันที่ */}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">วันที่เข้าพัก <span className="text-red-500">*</span></label>
-                                <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                    type="date" 
+                                    value={checkInDate}
+                                    onChange={(e) => {
+                                      setCheckInDate(e.target.value);
+                                      if (errors.checkInDate) setErrors({ ...errors, checkInDate: '' });
+                                    }}
+                                    className={`w-full border ${errors.checkInDate ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500`} 
+                                />
+                                {errors.checkInDate && <p className="text-red-500 text-xs mt-1">{errors.checkInDate}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">วันที่ออก</label>
                                 <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500" />
                             </div>
 
-                            {/* เงินประกัน & ค่าเช่า */}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">เงินประกัน <span className="text-red-500">*</span></label>
-                                <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+                                <div className={`flex items-center border ${errors.deposit ? 'border-red-500' : 'border-gray-300'} rounded overflow-hidden`}>
                                 <input 
                                     type="number" 
-                                    min="0" // 1. กำหนดค่าต่ำสุดเป็น 0
+                                    min="0" 
                                     placeholder="" 
                                     value={deposit}
-                                    onChange={(e) => setDeposit(e.target.value === '' ? '' : Number(e.target.value))}
+                                    onChange={(e) => {
+                                      setDeposit(e.target.value === '' ? '' : Number(e.target.value));
+                                      if (errors.deposit) setErrors({ ...errors, deposit: '' });
+                                    }}
                                     className="w-full px-3 py-2 text-sm text-gray-800 focus:outline-none"
                                     onKeyDown={(e) => {
-                                        // 2. ป้องกันการกดปุ่มเครื่องหมายลบ (-) และตัว e (exponential)
                                         if (e.key === '-' || e.key === 'e') {
                                         e.preventDefault();
                                         }
@@ -113,17 +185,22 @@ export default function AddContract() {
                                 />
                                 <span className="bg-gray-50 px-3 py-2 text-xs text-gray-500 border-l border-gray-300">บาท</span>
                                 </div>
+                                {errors.deposit && <p className="text-red-500 text-xs mt-1">{errors.deposit}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">ค่าเช่าต่อเดือน <span className="text-red-500">*</span></label>
-                                <div className="flex items-center border border-gray-300 rounded overflow-hidden">
+                                <div className={`flex items-center border ${errors.monthlyRent ? 'border-red-500' : 'border-gray-300'} rounded overflow-hidden`}>
                                     <input 
                                         type="number" 
-                                        min="0" // 1. กำหนดค่าต่ำสุดเป็น 0
+                                        min="0" 
                                         placeholder="" 
+                                        value={monthlyRent}
+                                        onChange={(e) => {
+                                          setMonthlyRent(e.target.value === '' ? '' : Number(e.target.value));
+                                          if (errors.monthlyRent) setErrors({ ...errors, monthlyRent: '' });
+                                        }}
                                         className="w-full px-3 py-2 text-sm text-gray-800 focus:outline-none"
                                         onKeyDown={(e) => {
-                                            // 2. ป้องกันการกดปุ่มเครื่องหมายลบ (-) และตัว e (exponential)
                                             if (e.key === '-' || e.key === 'e') {
                                             e.preventDefault();
                                             }
@@ -131,9 +208,9 @@ export default function AddContract() {
                                     />
                                     <span className="bg-gray-50 px-3 py-2 text-xs text-gray-500 border-l border-gray-300">บาท</span>
                                 </div>
+                                {errors.monthlyRent && <p className="text-red-500 text-xs mt-1">{errors.monthlyRent}</p>}
                             </div>
 
-                            {/* เงินจอง */}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">เงินจอง</label>
                                 <div className="flex items-center border border-gray-300 rounded overflow-hidden">
@@ -149,26 +226,31 @@ export default function AddContract() {
                                 <p className="text-xs text-gray-400 mt-1">ระบุจำนวนเงิน หากลูกค้ามีการโอนจองก่อนเข้าพัก</p>
                             </div>
                         
-                            {/* ช่องทางชำระ */}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">ชำระเงินประกันด้วย <span className="text-red-500">*</span></label>
-                                <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500 bg-white">
-                                <option value="">-- เลือก --</option>
-                                <option value="cash">เงินสด</option>
-                                <option value="bank">โอนเงินธนาคาร</option>
+                                <select 
+                                  value={paymentMethod}
+                                  onChange={(e) => {
+                                    setPaymentMethod(e.target.value);
+                                    if (errors.paymentMethod) setErrors({ ...errors, paymentMethod: '' });
+                                  }}
+                                  className={`w-full border ${errors.paymentMethod ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500 bg-white`}
+                                >
+                                  <option value="">-- เลือก --</option>
+                                  <option value="cash">เงินสด</option>
+                                  <option value="bank">โอนเงินธนาคาร</option>
                                 </select>
+                                {errors.paymentMethod && <p className="text-red-500 text-xs mt-1">{errors.paymentMethod}</p>}
                             </div>
 
                         </div>
 
-                        {/* กล่องสรุปสีเขียว */}
                         <div className="bg-white border-2 border-emerald-500 rounded-lg p-5 mb-10 shadow-sm relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500"></div> 
                             
                             <h4 className="text-sm font-bold text-gray-800 mb-4">สรุปยอดชำระ</h4>
                             <div className="flex justify-between items-center mb-2 text-sm">
                                 <span className="text-gray-500">เงินประกัน</span>
-                                {/* ใช้ Math.max(0, numDeposit) เพื่อล็อคค่าไม่ให้ต่ำกว่า 0 */}
                                 <span className="font-medium">
                                     {Math.max(0, numDeposit).toLocaleString()} บาท
                                 </span>
@@ -183,24 +265,59 @@ export default function AddContract() {
                             </div>
                         </div>
 
-                        {/* --- ข้อมูลผู้เช่า --- */}
                         <h3 className="text-lg font-bold text-gray-700 mb-6 border-b pb-2">ข้อมูลผู้เช่า</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">ชื่อจริง <span className="text-red-500">*</span></label>
-                                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                  type="text" 
+                                  value={firstName}
+                                  onChange={(e) => {
+                                    setFirstName(e.target.value);
+                                    if (errors.firstName) setErrors({ ...errors, firstName: '' });
+                                  }}
+                                  className={`w-full border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500`} 
+                                />
+                                {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">นามสกุล <span className="text-red-500">*</span></label>
-                                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                  type="text" 
+                                  value={lastName}
+                                  onChange={(e) => {
+                                    setLastName(e.target.value);
+                                    if (errors.lastName) setErrors({ ...errors, lastName: '' });
+                                  }}
+                                  className={`w-full border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500`} 
+                                />
+                                {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">เบอร์ติดต่อ <span className="text-red-500">*</span></label>
-                                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                  type="text" 
+                                  value={phone}
+                                  onChange={(e) => {
+                                    setPhone(e.target.value);
+                                    if (errors.phone) setErrors({ ...errors, phone: '' });
+                                  }}
+                                  className={`w-full border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500`} 
+                                />
+                                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">เลขบัตรประชาชน / พาสปอร์ต <span className="text-red-500">*</span></label>
-                                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                  type="text" 
+                                  value={idCard}
+                                  onChange={(e) => {
+                                    setIdCard(e.target.value);
+                                    if (errors.idCard) setErrors({ ...errors, idCard: '' });
+                                  }}
+                                  className={`w-full border ${errors.idCard ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500`} 
+                                />
+                                {errors.idCard && <p className="text-red-500 text-xs mt-1">{errors.idCard}</p>}
                             </div>
                         </div>
                         <div className="mb-8">
@@ -209,7 +326,6 @@ export default function AddContract() {
                             <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                         </div>
 
-                        {/* --- บุคคลติดต่อฉุกเฉิน --- */}
                         <h3 className="text-lg font-bold text-gray-700 mb-6 border-b pb-2">บุคคลติดต่อฉุกเฉิน</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <div>
@@ -226,7 +342,6 @@ export default function AddContract() {
                             </div>
                         </div>
 
-                        {/* --- อื่นๆ --- */}
                         <h3 className="text-lg font-bold text-gray-700 mb-6 border-b pb-2">อื่นๆ</h3>
                         <div className="mb-8">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Note</label>
@@ -234,13 +349,14 @@ export default function AddContract() {
                             <p className="text-xs text-gray-400 mt-1">ข้อความนี้จะแสดงที่รายงาน - ผู้เช่าปัจจุบัน</p>
                         </div>
 
-                        {/* ปุ่มต่อไป */}
                         <div className="flex justify-end pt-4 border-t border-gray-100">
-                            <Link to={`/manage/room/${roomId}/addcontract2`}>
-                                <button  className="bg-[#7d7671] hover:bg-[#68625d] text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
-                                    ต่อไป
-                                </button>
-                            </Link>
+                            {/* เปลี่ยนจาก <Link> เป็น <button> เพื่อตรวจสอบเงื่อนไขก่อนเปลี่ยนหน้า */}
+                            <button 
+                              onClick={handleNext}
+                              className="bg-[#7d7671] hover:bg-[#68625d] text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm"
+                            >
+                                ต่อไป
+                            </button>
                         </div>
 
                     </div>

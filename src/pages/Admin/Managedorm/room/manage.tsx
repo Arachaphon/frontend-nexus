@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link ,useOutletContext,useParams } from 'react-router-dom'; 
+import { Link, useOutletContext, useParams, useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
 import { 
   LayoutGrid, 
   CheckSquare, 
@@ -34,6 +34,7 @@ interface LayoutContextType {
 
 export default function Manage() {
   const { dormitoryId } = useParams();
+  const navigate = useNavigate(); // เรียกใช้งาน navigate สำหรับเปลี่ยนหน้า
   const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
   const [statsData, setStatsData] = useState({
     total: 0,
@@ -152,7 +153,6 @@ export default function Manage() {
     },
   ];
 
-
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
       {/* Sidebar ด้านซ้าย */}
@@ -166,7 +166,7 @@ export default function Manage() {
 
         <div className="flex-grow px-6 py-6">
             
-            {/* Breadcrumb: Home > ห้อง */}
+            {/* Breadcrumb: Home > ห้อง (แก้ไขโค้ดที่เกินมาให้กลับเป็นเหมือนเดิม) */}
             <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
                 <Home className="w-4 h-4" />
                 <span className="text-emerald-700 font-semibold">ห้อง</span>
@@ -221,11 +221,17 @@ export default function Manage() {
                     </tr>
                   </thead>
                   
-                  {/* --- ส่วนที่แก้ไข: ต้องมี tbody และการวนลูป map --- */}
                   <tbody className="divide-y divide-gray-100">
                     {rooms.map((room) => (
-                      <tr key={room.id} className="hover:bg-gray-50 transition-colors duration-150">
-                        <td className="px-6 py-4 font-bold text-gray-700 text-center">
+                      <tr 
+                        key={room.id} 
+                        // เพิ่มฟังก์ชัน onClick ตรงนี้เพื่อให้กดได้ทั้งแถว
+                        onClick={() => navigate(`/manage/${dormitoryId}/room/${room.id}`)}
+                        // เพิ่ม cursor-pointer ให้เมาส์เปลี่ยนเป็นรูปมือ
+                        className="hover:bg-emerald-50 cursor-pointer transition-colors duration-150 group"
+                      >
+                        {/* ปรับให้เลขห้องเป็นสีเขียวเวลา hover ทั้งแถว */}
+                        <td className="px-6 py-4 font-bold text-gray-700 text-center group-hover:text-emerald-700">
                           {room.room_number || 'N/A'}
                         </td>
                         <td className="px-6 py-4 text-center">
@@ -239,10 +245,11 @@ export default function Manage() {
                         <td className="px-6 py-4 text-center text-gray-400">-</td>
                         <td className="px-6 py-4 text-center text-gray-400">-</td>
                         <td className="px-6 py-4 text-right">
-                          {/* Link ที่ถูกต้อง ต้องอยู่ภายใน map เพื่อดึง room.id ได้ */}
+                          {/* สามารถเก็บ Link ไว้หรือเอาออกก็ได้ เพราะทั้งแถวคลิกได้แล้ว */}
                           <Link 
                             to={`/manage/${dormitoryId}/room/${room.id}`}
                             className="text-gray-500 hover:text-emerald-600 underline text-xs font-medium transition-colors"
+                            onClick={(e) => e.stopPropagation()} // ป้องกันไม่ให้ Event การคลิกซ้อนทับกัน
                           >
                             ข้อมูล
                           </Link>
@@ -250,7 +257,6 @@ export default function Manage() {
                       </tr>
                     ))}
                   </tbody>
-                  {/* ------------------------------------------------ */}
 
                 </table>
               </div>
