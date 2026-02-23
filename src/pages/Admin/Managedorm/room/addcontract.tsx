@@ -26,14 +26,14 @@ export default function AddContract() {
           'Content-Type': 'application/json'
         };
 
-        const dormRes = await fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`, { headers });
+        const dormRes = await fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {method:'GET', headers });
         const dormData = await dormRes.json();
         if (dormRes.ok) {
           setDormitoryName(dormData.name);
         }
 
         if (roomId) {
-            const roomsRes = await fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, { headers });
+            const roomsRes = await fetch(`${API_BASE}/api/dormitories/rooms/info/${roomId}`, {method:'GET', headers });
             const roomsData = await roomsRes.json();
             if (roomsRes.ok && roomsData.success) {
               const currentRoom = roomsData.data.find((room: any) => String(room.id) === String(roomId));

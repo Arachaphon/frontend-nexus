@@ -49,12 +49,14 @@ const RoomStatusSetup = () => {
             setLoading(true);
             try {
                 const [fRes, rRes] = await Promise.all([
-                    fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`, {
+                    fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
+                        method: 'GET',
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     }),
-                    fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, {
+                    fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {
+                        method: 'GET',
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
@@ -119,7 +121,7 @@ const RoomStatusSetup = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${API_BASE}/api/rooms/update-status`, {
+            const res = await fetch(`${API_BASE}/api/dormitories/rooms`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

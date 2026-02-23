@@ -46,12 +46,14 @@ const RoomPriceSetup = () => {
         const token = localStorage.getItem('token');
         if (!dormitoryId) return;
 
-        const floorRes = await fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`, {
+        const floorRes = await fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
+          method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const floorResult = await floorRes.json();
 
-        const roomRes = await fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, {
+        const roomRes = await fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {
+          method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const roomResult = await roomRes.json();
@@ -129,7 +131,7 @@ const RoomPriceSetup = () => {
     try {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
-      const response = await fetch(`${API_BASE}/api/rooms/update-prices`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/rooms`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -69,9 +69,9 @@ export default function Manage() {
         };
 
         const [statsRes, roomsRes, dormRes] = await Promise.all([
-          fetch(`${API_BASE}/api/dormitories/stats/${dormitoryId}`, { headers }),
-          fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, { headers }),
-          fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`, { headers })
+          fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}/stats`, { method:'GET', headers }),
+          fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {method:'GET', headers }),
+          fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {method:'GET', headers })
         ]);
 
         if (!statsRes.ok || !roomsRes.ok) {

@@ -39,18 +39,23 @@ const HomeMain = () => {
         if (!session) return;
         
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE}/api/dormitories/list`, {
+        const response = await fetch(`${API_BASE}/api/dormitories/main`, {
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-
         if (!response.ok) {
+          console.error("API Error:", {
+            url: response.url,
+            status: response.status
+          });
+
           if (response.status === 401) {
-            console.error("Token ไม่ถูกต้องหรือหมดอายุ");
             navigate('/login');
           }
-          return; 
+
+          return;
         }
 
         const result = await response.json();

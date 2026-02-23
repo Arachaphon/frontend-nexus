@@ -52,8 +52,8 @@ const ProfileSettings: React.FC = () => {
     try {
       setLoading(true);
       const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
-      const response = await fetch(`${API_BASE}/api/profile/update`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE}/api/profile`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           userId: currentId, 
@@ -101,7 +101,7 @@ const ProfileSettings: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/profile/change-password`, {
+      const response = await fetch(`${API_BASE}/api/profile/password`, {
         method: 'POST',
         headers: { 'Content-Type' : 'application/json'},
         body: JSON.stringify({

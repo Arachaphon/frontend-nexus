@@ -70,7 +70,8 @@ const BankAccountConfig = () => {
         alert('ไม่พบข้อมูลหอพัก กรุณากลับไปเริ่มสร้างใหม่');
         return;
       }
-      const bankRes = await fetch(`${API_BASE}/api/banks/list/${dormitoryId}`,{
+      const bankRes = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}`,{
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const bankData = await bankRes.json();
@@ -78,7 +79,8 @@ const BankAccountConfig = () => {
         setBankAccounts(bankData);
       }
 
-      const dormRes = await fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`,{
+      const dormRes = await fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,{
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dormData = await dormRes.json();
@@ -117,7 +119,7 @@ const BankAccountConfig = () => {
     const bankInfo = BANK_OPTIONS.find(b => b.value === selectedBank);
     
     try {
-      const response = await fetch(`${API_BASE}/api/banks/add`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/banks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,6 +156,7 @@ const BankAccountConfig = () => {
   };
 
   const handleNextStep = async () => {
+    console.log("CLICKED NEXT STEP");
     if (bankAccounts.length === 0) {
       alert("กรุณาเพิ่มบัญชีธนาคารอย่างน้อย 1 รายการ");
       return;
@@ -164,7 +167,7 @@ const BankAccountConfig = () => {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
 
-      const response = await fetch(`${API_BASE}/api/dormitories/update-payment-note`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/banks/payment-note/${dormitoryId}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -192,7 +195,7 @@ const BankAccountConfig = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/banks/delete/${id}`, {
+      const res = await fetch(`${API_BASE}/api/dormitories/banks/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -373,7 +376,8 @@ const BankAccountConfig = () => {
               กลับ
             </button>
           </a>
-          <button 
+          <button
+            type="button" 
             onClick={handleNextStep}
             disabled={bankAccounts.length === 0 || loading}
             className={`px-10 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all ${bankAccounts.length > 0 

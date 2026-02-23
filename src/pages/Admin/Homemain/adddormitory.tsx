@@ -74,7 +74,7 @@ const Adddormitory: React.FC = () => {
             const token = localStorage.getItem('token');
             const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
-            const response = await fetch(`${API_BASE}/api/dormitories/add`, {
+            const response = await fetch(`${API_BASE}/api/dormitories/main`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

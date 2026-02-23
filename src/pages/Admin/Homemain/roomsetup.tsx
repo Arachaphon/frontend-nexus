@@ -37,17 +37,18 @@ const RoomSetup = () => {
         const token = localStorage.getItem('token');
         if (!dormitoryId) return;
 
-        const floorRes = await fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`, {
+        const floorRes = await fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
+          method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const floorResult = await floorRes.json();
 
-        const roomRes = await fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, {
+        const roomRes = await fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {
+          method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const roomResult = await roomRes.json();
-
-        if (floorResult.success && roomResult.success) {
+        if (floorRes.ok && roomRes.ok) {
           const mappedFloors = floorResult.data.map((f: any) => ({
             id: f.id,
             floorNumber: f.floor_number,
@@ -73,7 +74,7 @@ const RoomSetup = () => {
     const dormitoryId = localStorage.getItem('dormitoryId');
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/rooms/room-setup`,{
+      const response = await fetch(`${API_BASE}/api/dormitories/floors`,{
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -81,7 +82,10 @@ const RoomSetup = () => {
         },
         body: JSON.stringify({ 
           dormitoryId: dormitoryId,
-          floors: floors
+          floors: floors.map(f => ({
+            floor_number: f.floorNumber,
+            room_count: f.rooms.length
+          }))
         })
       });
 
@@ -161,7 +165,7 @@ const RoomSetup = () => {
       }
     ]);
   };
-
+  
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
       <C_HomeMain />
