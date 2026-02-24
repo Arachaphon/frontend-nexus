@@ -66,6 +66,7 @@ const LoginPage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        
       });
 
       const result = await response.json();
@@ -76,10 +77,8 @@ const LoginPage = () => {
         }
         if (rememberMe) {
           localStorage.setItem('rememberUsername', formData.username);
-          localStorage.setItem('rememberPassword', formData.password);
         } else {
           localStorage.removeItem('rememberUsername');
-          localStorage.removeItem('rememberPassword');
         }
 
         if (result.user) {
