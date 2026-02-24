@@ -74,17 +74,21 @@ const RoomSetup = () => {
     const dormitoryId = localStorage.getItem('dormitoryId');
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/dormitories/floors`,{
+      const response = await fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`,{
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ 
-          dormitoryId: dormitoryId,
           floors: floors.map(f => ({
-            floor_number: f.floorNumber,
-            room_count: f.rooms.length
+            id: f.id,
+            floorNumber: f.floorNumber,
+            rooms: f.rooms.map(r => ({
+              id: r.id,
+              number: r.number,
+              isActive: r.isActive
+            }))
           }))
         })
       });

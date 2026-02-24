@@ -75,8 +75,8 @@ const BankAccountConfig = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const bankData = await bankRes.json();
-      if (Array.isArray(bankData)) {
-        setBankAccounts(bankData);
+      if (bankData.success) {
+        setBankAccounts(bankData.data);
       }
 
       const dormRes = await fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,{
@@ -119,7 +119,7 @@ const BankAccountConfig = () => {
     const bankInfo = BANK_OPTIONS.find(b => b.value === selectedBank);
     
     try {
-      const response = await fetch(`${API_BASE}/api/dormitories/banks`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -195,7 +195,8 @@ const BankAccountConfig = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/dormitories/banks/${id}`, {
+      const dormitoryId = localStorage.getItem('dormitoryId');
+      const res = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

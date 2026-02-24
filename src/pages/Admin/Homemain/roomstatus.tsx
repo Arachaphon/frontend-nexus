@@ -115,36 +115,69 @@ const RoomStatusSetup = () => {
 
     // --- อัปเดตสถานะห้อง ---
     const handleSetStatus = async (newStatus: RoomStatus) => {
-        const selectedRoomId = floors.flatMap(f => f.rooms.filter(r => r.isSelected).map(r => r.id));
-        if (selectedRoomId.length === 0) return alert("กรุณาเลือกห้องอย่างน้อย 1 ห้อง");
+        const selectedRoomIds = floors
+            .flatMap(f => f.rooms)
+            .filter(r => r.isSelected)
+            .map(r => r.id);
+
+        if (selectedRoomIds.length === 0) {
+            alert("กรุณาเลือกห้องอย่างน้อย 1 ห้อง");
+            return;
+        }
 
         setLoading(true);
+
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${API_BASE}/api/dormitories/rooms`, {
+            if (!token) {
+                alert("ไม่พบ token");
+                return;
+            }
+
+            const res = await fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({ roomId: selectedRoomId, status: newStatus, dormitoryId })
+                body: JSON.stringify({
+                    roomIds: selectedRoomIds,
+                    status: newStatus
+                })
             });
-            const result = await res.json();
-            if (result.success) {
-                setFloors(prev => prev.map(f => ({
-                    ...f,
-                    rooms: f.rooms.map(r => r.isSelected ? { ...r, status: newStatus, isSelected: false } : r)
-                })));
-            } else {
-                alert("เกิดข้อผิดพลาด: " + result.message);
+
+            if (!res.ok) {
+                const text = await res.text();
+                console.error("Backend error:", text);
+                alert("เกิดข้อผิดพลาดจาก server");
+                return;
             }
+
+            const result = await res.json();
+
+            if (result.success) {
+                // อัปเดต UI ทันที
+                setFloors(prev =>
+                    prev.map(f => ({
+                        ...f,
+                        rooms: f.rooms.map(r =>
+                            r.isSelected
+                                ? { ...r, status: newStatus, isSelected: false }
+                                : r
+                        )
+                    }))
+                );
+            } else {
+                alert(result.message || "เกิดข้อผิดพลาด");
+            }
+
         } catch (err) {
+            console.error("PATCH crash:", err);
             alert("ไม่สามารถบันทึกข้อมูลได้");
         } finally {
             setLoading(false);
         }
     };
-
     const getSelectedCount = () => floors.reduce((acc, f) => acc + f.rooms.filter(r => r.isSelected).length, 0);
 
     return (

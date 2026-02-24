@@ -80,7 +80,7 @@ const FloorSetup = () => {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
 
-      const response = await fetch(`${API_BASE}/api/dormitories/floors`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ const FloorSetup = () => {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
 
-      const response = await fetch(`${API_BASE}/api/dormitories/floors`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

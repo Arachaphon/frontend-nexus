@@ -7,14 +7,14 @@ import Footer from '../../../components/Footerhomemain';
 const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
 interface Room {
-  id: number;
+  id: string;
   number: string;
   price: number;
   isSelected: boolean;
 }
 
 interface FloorData {
-  id: number;
+  id: string;
   floorNumber: number;
   rooms: Room[];
 }
@@ -81,7 +81,7 @@ const RoomPriceSetup = () => {
     fetchData();
   }, [dormitoryId]);
 
-  const toggleSelectRoom = (floorId: number, roomId: number) => {
+  const toggleSelectRoom = (floorId: string, roomId: string) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
       return {
@@ -91,7 +91,7 @@ const RoomPriceSetup = () => {
     }));
   };
 
-  const handleSelectFloor = (floorId: number, selectAll: boolean) => {
+  const handleSelectFloor = (floorId: string, selectAll: boolean) => {
     setFloors(prev => prev.map(f => {
       if (f.id !== floorId) return f;
       return {
@@ -131,16 +131,15 @@ const RoomPriceSetup = () => {
     try {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
-      const response = await fetch(`${API_BASE}/api/dormitories/rooms`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          roomId: selectedRoomId,
-          price: newPrice,
-          dormitoryId: dormitoryId
+          roomIds: selectedRoomId,
+          price: newPrice
         })
       });
 
