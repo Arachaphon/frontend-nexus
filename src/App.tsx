@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import 'boxicons/css/boxicons.min.css';
 
 // Pages - ตรวจสอบ Path ให้ตรงกับโฟลเดอร์จริงของคุณ
+import ProtectedRoute from './hooks/ProtectedRoute'
 import Home from './pages/Admin/Home/Home.tsx';
 import Login from './pages/Admin/Login/login.tsx';
 import RegisterPage from './pages/Admin/Login/register.tsx';
@@ -36,18 +37,19 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
       <Route path="/createpassword" element={<CreatePasswordPage />} />
-      <Route path="/homemain" element={<HomeMain />} />
-      <Route path="/homemain/adddormitory" element={<Adddormitory />} />
-      <Route path="/homemain/utilitycalculation" element={<UtilityCalculation />} />
-      <Route path="/homemain/profilesettings" element={<ProfileSettings />} />
-      <Route path="/homemain/bankaccountconfig" element={<BankAccountConfig />} />
-      <Route path="/homemain/floorsetup" element={<FloorSetup />} />
-      <Route path="/homemain/roomsetup" element={<RoomLayoutSetup />} />
-      <Route path="/homemain/roomprice" element={<RoomPriceSetup />} />
-      <Route path="/homemain/roomstatus" element={<RoomStatusSetup />} />
-      <Route path="/homemain/homefinish" element={<RoomFinish />} />
-      <Route path="/manage" element={<Manage />} />
       
+      <Route path="/homemain" element={<ProtectedRoute><HomeMain /></ProtectedRoute>}/>
+      <Route path="/homemain/adddormitory" element={<ProtectedRoute><Adddormitory /></ProtectedRoute>}/>
+      <Route path="/homemain/utilitycalculation" element={<ProtectedRoute><UtilityCalculation /></ProtectedRoute>} />
+      <Route path="/homemain/profilesettings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+      <Route path="/homemain/bankaccountconfig" element={<ProtectedRoute><BankAccountConfig /></ProtectedRoute>} />
+      <Route path="/homemain/floorsetup" element={<ProtectedRoute><FloorSetup /></ProtectedRoute>} />
+      <Route path="/homemain/roomsetup" element={<ProtectedRoute><RoomLayoutSetup /></ProtectedRoute>} />
+      <Route path="/homemain/roomprice" element={<ProtectedRoute><RoomPriceSetup /></ProtectedRoute>} />
+      <Route path="/homemain/roomstatus" element={<ProtectedRoute><RoomStatusSetup /></ProtectedRoute>} />
+      <Route path="/homemain/homefinish" element={<ProtectedRoute><RoomFinish /></ProtectedRoute>} />
+      <Route path="/manage" element={<ProtectedRoute><Manage /></ProtectedRoute>} />
+
 
 
       {/* --- เพิ่ม Route สำหรับเมนูอื่นๆ ใน Sidebar (กันจอขาว) --- */}

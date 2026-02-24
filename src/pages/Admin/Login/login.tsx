@@ -43,7 +43,7 @@ const LoginPage = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); 
-    
+    console.log('handleLogin called')
     const { username, password } = formData;
     const newErrors: { username?: string; password?: string } = {};
 
@@ -60,7 +60,7 @@ const LoginPage = () => {
 
     try {
       // แก้ไขจุดสำคัญ: ดึงค่าจาก window.__ENV__ ตามมาตรฐาน Docker/อาจารย์
-      const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+      const API_BASE = window.__ENV__?.API_BASE || 'https://backend-nexus.67023031-devops.workers.dev';
       
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',

@@ -10,7 +10,7 @@ const GreenCheckIcon = () => (
   </svg>
 );
 
-const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+const API_BASE = window.__ENV__?.API_BASE || 'https://backend-nexus.67023031-devops.workers.dev';
 
 const HomeMain = () => {
   const [activeTab, setActiveTab] = useState('dormitory');
@@ -27,8 +27,9 @@ const HomeMain = () => {
   // --------------------------------------------------
 
   useEffect(() => {
-    const session = localStorage.getItem('userSession');
-    if (!session) {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
       navigate('/login');
       return;
     }
@@ -50,10 +51,6 @@ const HomeMain = () => {
             url: response.url,
             status: response.status
           });
-
-          if (response.status === 401) {
-            navigate('/login');
-          }
 
           return;
         }
