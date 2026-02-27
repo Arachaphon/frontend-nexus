@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Home, ChevronRight, Waves, Flame, Phone } from 'lucide-react';
 
@@ -8,12 +8,58 @@ import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
 export default function RoomInfo() {
-  // รับพารามิเตอร์ roomId จาก URL
-  const { roomId } = useParams<{ roomId: string }>();
-  
-  // ปรับแก้เผื่อ URL ส่งคำว่า roominfo มา จะได้แสดงเป็น 101 ตามดีไซน์
-  const roomNumber = roomId === 'roominfo' ? '101' : (roomId || '101');
+    const { dormitoryId,roomId } = useParams();
+    const [dormitoryName, setDormitoryName] = useState<string>('');
+    const [roomNumber, setRoomNumber] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(true);
+    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (!dormitoryId) return;
+            try {
+                setLoading(true)
+                setError(null)
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('Authentication token not found.');
+                    return;
+                }
+                const headers = {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+                };
+
+                const [dormRes, roomRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,
+                    {method:'GET' , headers}),
+                    fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`,
+                    {method:'GET' , headers})
+                ]);
+
+                if (!dormRes.ok || !roomRes.ok) {
+                    console.error('API request failed:', dormRes.status , roomRes.status);
+                    return;
+                }
+
+                const dormData = await dormRes.json();
+                console.log("DORM RESPONSE:", dormData);
+                setDormitoryName(dormData.data.name)
+
+                const roomData = await roomRes.json();
+                console.log("ROOM RESPONSE:", roomData);
+                setRoomNumber(roomData.data.room_number)
+            } catch (err) {
+                console.error('Unexpected error:', error);
+            } finally {
+                setLoading(false)
+            }
+        };
+
+        fetchStats()
+    }, [dormitoryId,roomId]);
+    
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       
@@ -39,7 +85,7 @@ export default function RoomInfo() {
                          </Link>
                          <ChevronRight className="w-4 h-4 text-gray-400" />
                          <Link to={`/manage/room/${roomId}`} className="hover:text-emerald-600">
-                             ข้อมูล ห้อง {roomId || '101'}
+                             ข้อมูล ห้อง {roomId}
                          </Link>
 
                      </div>

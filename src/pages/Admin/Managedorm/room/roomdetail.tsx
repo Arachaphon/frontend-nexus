@@ -5,73 +5,59 @@ import C_HomeMain from '../../../../components/C_homemain';
 import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
-declare global {
-  interface Window {
-    __ENV__: {
-      API_BASE: string;
-    };
-  }
-}
-interface Room {
-  id: string;
-  room_number: string;
-  status: string;
-}
 
 
 export default function RoomDetail() {
-  // รับค่า id ห้องจาก URL (เช่น 101)
-  const { dormitoryId } = useParams();
-  const { roomId } = useParams();
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
-  const [dormitoryName, setDormitoryName] = useState<string>('');
-  const [room, setRoom] = useState<Room | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+    const { dormitoryId,roomId } = useParams();
+    const [dormitoryName, setDormitoryName] = useState<string>('');
+    const [roomNumber, setRoomNumber] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(true);
+    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
-  useEffect(() => {
-    const fetchRoomData = async () => {
-      setIsLoading(true);
+    useEffect(() => {
+      const fetchStats = async () => {
+        if (!dormitoryId) return;
+        try {
+          setLoading(true)
+          setError(null)
+          const token = localStorage.getItem('token');
+            if (!token) {
+              console.error('Authentication token not found.');
+              return;
+            }
+            const headers = {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            };
 
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+            const [dormRes, roomRes] = await Promise.all([
+              fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,
+                {method:'GET' , headers}),
+              fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`,
+                {method:'GET' , headers})
+            ]);
 
-        const headers = {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
-       const dormRes = await fetch(
-          `${API_BASE}/api/dormitories/info/${dormitoryId}`,
-          { headers }
-        );
-        if (!dormRes.ok) {
-          console.error('Failed to fetch dormitory info');
-          return;
+            if (!dormRes.ok || !roomRes.ok) {
+              console.error('API request failed:', dormRes.status , roomRes.status);
+              return;
+            }
+
+            const dormData = await dormRes.json();
+            console.log("DORM RESPONSE:", dormData);
+            setDormitoryName(dormData.name)
+
+            const roomData = await roomRes.json();
+            console.log("ROOM RESPONSE:", roomData);
+            setRoomNumber(roomData.data.room_number)
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false)
         }
-        const dormJson = await dormRes.json();
-        setDormitoryName(dormJson.name);
-
-        const roomRes = await fetch(
-          `${API_BASE}/api/rooms/info/${roomId}`,
-          { headers }
-        );
-        if (!roomRes.ok) {
-          console.error('Failed to fetch room info');
-          return;
-        }
-        const roomJson = await roomRes.json();
-        setRoom(roomJson);
-      } catch (error) {
-        console.error('Unexpected error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (dormitoryId) {
-      fetchRoomData();
-    }
-  }, [dormitoryId, roomId]);
+      };
+      fetchStats()
+    }, [dormitoryId, roomId]);
   
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
@@ -92,7 +78,7 @@ export default function RoomDetail() {
               </Link>
               <ChevronRight className="w-4 h-4 text-gray-400" />
               {/* ดึงเลขห้องมาแสดง ถ้ากำลังโหลดให้แสดง roomId หรือ ... ไปก่อน */}
-              <span className="text-gray-700 font-medium">ข้อมูล ห้อง {room?.room_number || roomId || '...'}</span>
+              <span className="text-gray-700 font-medium">ข้อมูล ห้อง {roomNumber}</span>
             </div>
             {/* เส้นคั่น */}
             <hr className="border-gray-300 w-full" />
@@ -101,7 +87,7 @@ export default function RoomDetail() {
 
           {/* Room Title & Status */}
           <div className="flex items-center gap-4 mb-8">
-            <h1 className="text-2xl font-bold text-gray-700">ห้อง : {room?.room_number || roomId || '...'}</h1>
+            <h1 className="text-2xl font-bold text-gray-700">ห้อง :  {roomNumber}</h1>
             <span className="bg-cyan-100 text-cyan-600 px-3 py-1 rounded-md text-sm font-bold shadow-sm">
               ว่าง
             </span>

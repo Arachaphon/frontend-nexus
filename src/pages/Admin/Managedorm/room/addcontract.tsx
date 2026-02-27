@@ -15,41 +15,51 @@ export default function AddContract() {
   const [dormitoryName, setDormitoryName] = useState<string>('');
   const [roomNumber, setRoomNumber] = useState<string>(''); 
 
-  useEffect(() => {
-    const fetchInfo = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token || !dormitoryId) return;
+    useEffect(() => {
+        console.log("DormitoryId:", dormitoryId);
+        console.log("RoomId:", roomId);
+        const fetchInfo = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token || !dormitoryId) return;
 
-        const headers = {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
+            const headers = {
+                Authorization: `Bearer ${token}`,
+            };
 
-        const dormRes = await fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {method:'GET', headers });
-        const dormData = await dormRes.json();
-        if (dormRes.ok) {
-          setDormitoryName(dormData.name);
-        }
+            const dormRes = await fetch(
+                `${API_BASE}/api/dormitories/main/${dormitoryId}`,
+                { headers }
+            );
 
-        if (roomId) {
-            const roomsRes = await fetch(`${API_BASE}/api/dormitories/rooms/info/${roomId}`, {method:'GET', headers });
-            const roomsData = await roomsRes.json();
-            if (roomsRes.ok && roomsData.success) {
-              const currentRoom = roomsData.data.find((room: any) => String(room.id) === String(roomId));
-              if (currentRoom) {
-                setRoomNumber(currentRoom.room_number);
-              }
+            if (!dormRes.ok) return;
+
+            const dormData = await dormRes.json();
+            if (dormRes.ok) {
+                setDormitoryName(dormData.name);
             }
-        }
 
-      } catch (error) {
+            console.log(dormRes.status);
+            console.log(dormData);
+
+            if (roomId) {
+                const roomRes = await fetch(
+                `${API_BASE}/api/dormitories/rooms/info/${roomId}`,
+                { headers }
+                );
+
+                if (!roomRes.ok) return;
+
+                const roomData = await roomRes.json();
+                setRoomNumber(roomData.data.room_number);
+            }
+        } catch (error) {
         console.error('Error fetching info:', error);
-      }
+        }
     };
 
     fetchInfo();
-  }, [dormitoryId, roomId, API_BASE]);
+    }, [dormitoryId, roomId]);
 
   // --- States สำหรับฟอร์ม ---
   const [checkInDate, setCheckInDate] = useState('');
@@ -86,7 +96,6 @@ export default function AddContract() {
 
     setErrors(newErrors);
 
-    // ถ้าไม่มี error เลย ให้ไปยังหน้าถัดไป
     if (Object.keys(newErrors).length === 0) {
       navigate(`/manage/${dormitoryId}/room/${roomId}/addcontract2`);
     }
