@@ -33,3 +33,5 @@ dist-ssr
 
 # Docker generated (กรณีถ้ามีการ build ในเครื่อง)
 .dockerignore
+.vercel
+.env*.local
