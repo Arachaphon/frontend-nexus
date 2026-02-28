@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect, useCallback } from 'react'; 
 import { useParams, Link, useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
 import { Home, ChevronRight } from 'lucide-react';
 
@@ -8,61 +8,70 @@ import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
 export default function AddContract() {
-  const { dormitoryId, roomId } = useParams();
-  const navigate = useNavigate(); // ใช้สำหรับเปลี่ยนหน้าหลังจาก Validate ผ่าน
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+    const { dormitoryId, roomId } = useParams();
+    const navigate = useNavigate();
+    const [dormitoryName, setDormitoryName] = useState<string>('');
+    const [roomNumber, setRoomNumber] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-  const [dormitoryName, setDormitoryName] = useState<string>('');
-  const [roomNumber, setRoomNumber] = useState<string>(''); 
+    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
-    useEffect(() => {
-        console.log("DormitoryId:", dormitoryId);
-        console.log("RoomId:", roomId);
-        const fetchInfo = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token || !dormitoryId) return;
+    const fetchContract = useCallback(async () => {
+    if (!dormitoryId || !roomId) return;
 
-            const headers = {
-                Authorization: `Bearer ${token}`,
-            };
+    setLoading(true);
+    setError(null);
 
-            const dormRes = await fetch(
-                `${API_BASE}/api/dormitories/main/${dormitoryId}`,
-                { headers }
-            );
-
-            if (!dormRes.ok) return;
-
-            const dormData = await dormRes.json();
-            if (dormRes.ok) {
-                setDormitoryName(dormData.name);
-            }
-
-            console.log(dormRes.status);
-            console.log(dormData);
-
-            if (roomId) {
-                const roomRes = await fetch(
-                `${API_BASE}/api/dormitories/rooms/info/${roomId}`,
-                { headers }
-                );
-
-                if (!roomRes.ok) return;
-
-                const roomData = await roomRes.json();
-                setRoomNumber(roomData.data.room_number);
-            }
-        } catch (error) {
-        console.error('Error fetching info:', error);
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Authentication token not found');
         }
-    };
 
-    fetchInfo();
-    }, [dormitoryId, roomId]);
+        const headers = {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        };
+
+        const [dormRes, roomRes] = await Promise.all([
+            fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {
+            method: 'GET',
+            headers,
+            }),
+            fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, {
+            method: 'GET',
+            headers,
+            }),
+        ]);
+
+        if (!dormRes.ok || !roomRes.ok) {
+            throw new Error('API request failed');
+        }
+
+        const dormData = await dormRes.json();
+        const roomData = await roomRes.json();
+
+        setDormitoryName(dormData.name);
+        setRoomNumber(roomData.data.room_number);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            setError(err.message);
+        } else {
+            setError('Unexpected error occurred');
+        }
+    } finally {
+        setLoading(false);
+    }
+}, [dormitoryId, roomId, API_BASE]);
+
+useEffect(() => {
+    fetchContract();
+}, [fetchContract]);
 
   // --- States สำหรับฟอร์ม ---
   const [checkInDate, setCheckInDate] = useState('');
+  const [checkOutDate, setCheckOutDate] = useState('');
   const [deposit, setDeposit] = useState<number | ''>(''); 
   const [monthlyRent, setMonthlyRent] = useState<number | ''>(''); // เพิ่ม state ค่าเช่าต่อเดือน
   const [booking, setBooking] = useState<number | ''>('');
@@ -73,6 +82,11 @@ export default function AddContract() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [idCard, setIdCard] = useState('');
+  const [address, setAddress] = useState('');
+  const [emerName, setEmerName] = useState('');
+  const [emerRelation, setEmerRelation] = useState('');
+  const [emerPhone, setemerPhone] = useState('');
+  const [note, setNote] = useState('');
 
   // State เก็บ Error
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -82,10 +96,13 @@ export default function AddContract() {
   const totalToPay = Math.max(0, numDeposit - numBooking);
 
   // ฟังก์ชันตรวจสอบความถูกต้องของฟอร์ม
-  const handleNext = () => {
+  const handleNext = async () => {
     const newErrors: { [key: string]: string } = {};
-
+    
     if (!checkInDate) newErrors.checkInDate = 'กรุณาระบุวันที่เข้าพัก';
+    if (checkOutDate && checkOutDate <= checkInDate) {
+        newErrors.checkOutDate = 'วันที่ออกต้องมากกว่าวันที่เข้าพัก';
+    }
     if (deposit === '') newErrors.deposit = 'กรุณาระบุเงินประกัน';
     if (monthlyRent === '') newErrors.monthlyRent = 'กรุณาระบุค่าเช่าต่อเดือน';
     if (!paymentMethod) newErrors.paymentMethod = 'กรุณาเลือกช่องทางการชำระเงิน';
@@ -93,11 +110,65 @@ export default function AddContract() {
     if (!lastName.trim()) newErrors.lastName = 'กรุณาระบุนามสกุล';
     if (!phone.trim()) newErrors.phone = 'กรุณาระบุเบอร์ติดต่อ';
     if (!idCard.trim()) newErrors.idCard = 'กรุณาระบุเลขบัตรประชาชน / พาสปอร์ต';
-
+    
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      navigate(`/manage/${dormitoryId}/room/${roomId}/addcontract2`);
+    if (Object.keys(newErrors).length > 0) {
+        return;
+    }
+
+    try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Authentication token not found');
+        }
+        const headers = {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        };
+
+        const contractRes = await fetch(
+            `${API_BASE}/api/rentals/contracts` , {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                room_id: roomId,
+                check_in_date: checkInDate,
+                check_out_date: checkOutDate || null,
+                rent_price: monthlyRent,
+                security_deposit: deposit,
+                security_deposit_type: paymentMethod,
+                booking_fee: booking,
+                tenant: {
+                    first_name: firstName,
+                    last_name: lastName,
+                    phone_number: phone,
+                    id_card_or_passport: idCard,
+                    address: address || null,
+                    emergency_contact_name: emerName || null,
+                    emergency_contact_relation: emerRelation || null,
+                    emergency_contact_phone: emerPhone || null,
+                    note: note || null
+                }
+            })
+        });
+
+
+        if (!contractRes.ok) {
+            const errData = await contractRes.json();
+            throw new Error(errData.error || 'API request failed');
+        }
+
+        navigate(`/manage/${dormitoryId}/room/${roomId}/addcontract2`);
+    } catch (err:unknown) {
+        if (err instanceof Error) {
+            setError (err.message);
+        } else {
+            setError('Unexpected Error occurred')
+        }
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -110,6 +181,14 @@ export default function AddContract() {
         
         <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
 
+        {loading && (
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-50">
+            <div className="text-gray-600 text-sm font-medium">
+              Loading...
+            </div>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto">
             
             <div className="flex-grow px-6 py-6">
@@ -121,7 +200,7 @@ export default function AddContract() {
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                         <Link to={`/manage/${dormitoryId}/room/${roomId}`} className="hover:text-emerald-600">
-                            ข้อมูล ห้อง {roomNumber || roomId || '...'}
+                            ข้อมูล ห้อง {roomNumber }
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-700 font-medium">เพิ่มสัญญา</span>
@@ -170,7 +249,20 @@ export default function AddContract() {
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">วันที่ออก</label>
-                                <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500" />
+                                <input type="date"
+                                value={checkOutDate}
+                                onChange={(e) => {
+                                    setCheckOutDate(e.target.value);
+                                    if (errors.checkOutDate) {
+                                    setErrors({ ...errors, checkOutDate: '' });
+                                    }
+                                }}
+                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500" />
+                                {errors.checkOutDate && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.checkOutDate}
+                                </p>
+                                )}
                             </div>
 
                             <div>
@@ -246,8 +338,8 @@ export default function AddContract() {
                                   className={`w-full border ${errors.paymentMethod ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-emerald-500 bg-white`}
                                 >
                                   <option value="">-- เลือก --</option>
-                                  <option value="cash">เงินสด</option>
-                                  <option value="bank">โอนเงินธนาคาร</option>
+                                  <option value="เงินสด">เงินสด</option>
+                                  <option value="โอนเงินธนาคาร">โอนเงินธนาคาร</option>
                                 </select>
                                 {errors.paymentMethod && <p className="text-red-500 text-xs mt-1">{errors.paymentMethod}</p>}
                             </div>
@@ -332,29 +424,48 @@ export default function AddContract() {
                         <div className="mb-8">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">ที่อยู่</label>
                             <p className="text-xs text-gray-400 mt-1">สำหรับแสดงบนใบแจ้งหนี้/ใบเสร็จ</p>
-                            <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                            <input 
+                            type="text" 
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                         </div>
 
                         <h3 className="text-lg font-bold text-gray-700 mb-6 border-b pb-2">บุคคลติดต่อฉุกเฉิน</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">ชื่อบุคคลติดต่อฉุกเฉิน</label>
-                                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                type="text"
+                                value={emerName}
+                                onChange={(e) => setEmerName(e.target.value)} 
+                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">ความสัมพันธ์</label>
-                                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                type="text"
+                                value={emerRelation}
+                                onChange={(e) => setEmerRelation(e.target.value)}                                  
+                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">เบอร์ติดต่อ</label>
-                                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                                <input 
+                                type="text"
+                                value={emerPhone}
+                                onChange={(e) => setemerPhone(e.target.value)}  
+                                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                             </div>
                         </div>
 
                         <h3 className="text-lg font-bold text-gray-700 mb-6 border-b pb-2">อื่นๆ</h3>
                         <div className="mb-8">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Note</label>
-                            <textarea rows={3} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"></textarea>
+                            <textarea rows={3} 
+                            value={note}
+                            onChange={(e) =>  setNote(e.target.value)}                                   
+                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                             <p className="text-xs text-gray-400 mt-1">ข้อความนี้จะแสดงที่รายงาน - ผู้เช่าปัจจุบัน</p>
                         </div>
 

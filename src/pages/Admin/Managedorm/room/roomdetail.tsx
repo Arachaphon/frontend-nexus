@@ -1,93 +1,111 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Home,  ChevronRight } from 'lucide-react';
+import { Home, ChevronRight } from 'lucide-react';
 import C_HomeMain from '../../../../components/C_homemain';
 import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
-
-
 export default function RoomDetail() {
-    const { dormitoryId,roomId } = useParams();
-    const [dormitoryName, setDormitoryName] = useState<string>('');
-    const [roomNumber, setRoomNumber] = useState<string>('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(true);
-    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const { dormitoryId, roomId } = useParams();
 
-    useEffect(() => {
-      const fetchStats = async () => {
-        if (!dormitoryId) return;
-        try {
-          setLoading(true)
-          setError(null)
-          const token = localStorage.getItem('token');
-            if (!token) {
-              console.error('Authentication token not found.');
-              return;
-            }
-            const headers = {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            };
+  const [dormitoryName, setDormitoryName] = useState<string>('');
+  const [roomNumber, setRoomNumber] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-            const [dormRes, roomRes] = await Promise.all([
-              fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,
-                {method:'GET' , headers}),
-              fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`,
-                {method:'GET' , headers})
-            ]);
+  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
-            if (!dormRes.ok || !roomRes.ok) {
-              console.error('API request failed:', dormRes.status , roomRes.status);
-              return;
-            }
+  const fetchRoomDetail = useCallback(async () => {
+    if (!dormitoryId || !roomId) return;
 
-            const dormData = await dormRes.json();
-            console.log("DORM RESPONSE:", dormData);
-            setDormitoryName(dormData.name)
+    setLoading(true);
+    setError(null);
 
-            const roomData = await roomRes.json();
-            console.log("ROOM RESPONSE:", roomData);
-            setRoomNumber(roomData.data.room_number)
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setLoading(false)
-        }
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       };
-      fetchStats()
-    }, [dormitoryId, roomId]);
-  
+
+      const [dormRes, roomRes] = await Promise.all([
+        fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {
+          method: 'GET',
+          headers,
+        }),
+        fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, {
+          method: 'GET',
+          headers,
+        }),
+      ]);
+
+      if (!dormRes.ok || !roomRes.ok) {
+        throw new Error('API request failed');
+      }
+
+      const dormData = await dormRes.json();
+      const roomData = await roomRes.json();
+
+      setDormitoryName(dormData.name);
+      setRoomNumber(roomData.data.room_number);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [dormitoryId, roomId, API_BASE]);
+
+  useEffect(() => {
+    fetchRoomDetail();
+  }, [fetchRoomDetail]);
+
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
       <Sidebar />
-      
-      <div className="flex-1 flex flex-col min-w-0">
+
+      <div className="flex-1 flex flex-col min-w-0 relative">
         <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
 
+        {/* ✅ Loading Overlay (ไม่กระทบ UI layout เดิม) */}
+        {loading && (
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-50">
+            <div className="text-gray-600 text-sm font-medium">
+              Loading...
+            </div>
+          </div>
+        )}
+
         <div className="flex-grow px-6 py-6">
-          
-          {/* --- ส่วนที่แก้ไข: Breadcrumb Navigation --- */}
+
           <div className="mb-8 w-full">
             <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
-              {/* ลบลูกศรออก และรวมรูปบ้านกับคำว่า "ห้อง" เป็นลิงก์เดียวกัน เพื่อคลิกกลับไปหน้า Manage หอพัก */}
-              <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600 flex items-center gap-1.5">
+              <Link
+                to={`/manage/${dormitoryId}`}
+                className="hover:text-emerald-600 flex items-center gap-1.5"
+              >
                 <Home className="w-4 h-4" />
                 <span>ห้อง</span>
               </Link>
               <ChevronRight className="w-4 h-4 text-gray-400" />
-              {/* ดึงเลขห้องมาแสดง ถ้ากำลังโหลดให้แสดง roomId หรือ ... ไปก่อน */}
-              <span className="text-gray-700 font-medium">ข้อมูล ห้อง {roomNumber}</span>
+              <span className="text-gray-700 font-medium">
+                ข้อมูล ห้อง {roomNumber}
+              </span>
             </div>
-            {/* เส้นคั่น */}
             <hr className="border-gray-300 w-full" />
           </div>
-          {/* --------------------------------------- */}
 
-          {/* Room Title & Status */}
           <div className="flex items-center gap-4 mb-8">
-            <h1 className="text-2xl font-bold text-gray-700">ห้อง :  {roomNumber}</h1>
+            <h1 className="text-2xl font-bold text-gray-700">
+              ห้อง : {roomNumber}
+            </h1>
             <span className="bg-cyan-100 text-cyan-600 px-3 py-1 rounded-md text-sm font-bold shadow-sm">
               ว่าง
             </span>
