@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'; // เพิ่ม useEffect
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Home, ChevronRight, Calendar } from 'lucide-react';
 
 // Import Components
@@ -8,59 +8,175 @@ import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
 export default function AdvanceRent() {
-  // ดึงทั้ง dormitoryId และ roomId จาก URL
-  const { dormitoryId, roomId } = useParams();
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+    const { dormitoryId, roomId, contractId } = useParams();
+    console.log('params:', { dormitoryId, roomId, contractId }); 
+    const navigate = useNavigate();
 
-  // State สำหรับเก็บชื่อหอพักและเลขห้อง
-  const [dormitoryName, setDormitoryName] = useState<string>('');
-  const [roomNumber, setRoomNumber] = useState<string>('');
+    const [dormitoryName, setDormitoryName] = useState<string>('');
+    const [roomNumber, setRoomNumber] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-  // ดึงชื่อหอพักและหาเลขห้อง (รูปแบบเดียวกับ Step 1)
-  useEffect(() => {
-    const fetchInfo = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token || !dormitoryId) return;
+    const [checkInDate, setCheckInDate] = useState<string>('');
+    const [monthlyRent, setMonthlyRent] = useState<number>(0);
 
-        const headers = {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        };
+    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
-        const dormRes = await fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`, { headers });
-        if (dormRes.ok) {
-          const dormData = await dormRes.json();
-          setDormitoryName(dormData.name);
-        }
+    // ---------------- FETCH DATA ----------------
+    const fetchContract = useCallback(async () => {
+        if (!dormitoryId || !roomId || !contractId) return;
 
-        if (roomId) {
-            const roomsRes = await fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`, { headers });
-            if (roomsRes.ok) {
-                const roomsData = await roomsRes.json();
-                if (roomsData.success) {
-                  const currentRoom = roomsData.data.find((room: any) => String(room.id) === String(roomId));
-                  if (currentRoom) {
-                    setRoomNumber(currentRoom.room_number);
-                  }
-                }
+        setLoading(true);
+        setError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Authentication token not found');
+
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            };
+
+            const [dormRes, roomRes, contractRes] = await Promise.all([
+                fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {
+                    method: 'GET',  
+                    headers 
+                }),
+                fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, {
+                    method: 'GET',  
+                    headers 
+                }),
+                fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}/${contractId}`, {
+                    method: 'GET',  
+                    headers 
+                }),
+            ]);
+
+            if (!dormRes.ok || !roomRes.ok || !contractRes.ok) {
+                throw new Error('API request failed');
             }
+
+            const dormData = await dormRes.json();
+            const roomData = await roomRes.json();
+            const contractData = await contractRes.json();
+
+            setDormitoryName(dormData.name);
+            setRoomNumber(roomData.data.room_number);
+            setCheckInDate(contractData.data.check_in_date);
+            setMonthlyRent(contractData.data.rent_price);
+
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Unexpected error occurred');
+        } finally {
+            setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching info:', error);
-      }
+    }, [dormitoryId, roomId, contractId, API_BASE]);
+
+    useEffect(() => {
+        fetchContract();
+    }, [fetchContract]);
+
+    // ---------------- FORM STATE ----------------
+    const [saving, setSaving] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
+
+    const [billingCycle, setBillingCycle] = useState('');
+    const [description, setDescription] = useState('');
+    const [amount, setAmount] = useState<number>(0);
+    const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank'>('cash');
+    const [note, setNote] = useState('');
+
+    const paymentTypeMap: Record<'cash' | 'bank', string> = {
+        cash: 'เงินสด',
+        bank: 'โอนเงินธนาคาร'
     };
 
-    fetchInfo();
-  }, [dormitoryId, roomId, API_BASE]);
+    useEffect(() => {
+        if (!billingCycle || !roomNumber) return;
+        setDescription(`ค่าเช่าห้อง ${roomNumber} เดือน ${billingCycle}`);
+    }, [billingCycle, roomNumber]);
 
-  // State สำหรับเก็บข้อมูลฟอร์ม
-  const [billingCycle, setBillingCycle] = useState(''); 
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [note, setNote] = useState('');
 
+    useEffect(() => {
+        if (!billingCycle || !checkInDate || !monthlyRent) return;
+
+        const checkIn = new Date(checkInDate);
+        const [year, month] = billingCycle.split('-').map(Number);
+        const billingDate = new Date(year, month - 1, 1);
+
+
+        if (billingDate < new Date(checkIn.getFullYear(), checkIn.getMonth(), 1)) {
+            setFormError('ไม่สามารถเลือกรอบบิลก่อนเดือนที่เข้าอยู่ได้');
+            return;
+        } else {
+            setFormError(null);
+        }
+
+        if (
+            billingDate.getFullYear() !== checkIn.getFullYear() ||
+            billingDate.getMonth() !== checkIn.getMonth()
+        ) {
+            setAmount(monthlyRent);
+            return;
+        }
+
+        const endOfMonth = new Date(year, month, 0);
+        const daysInMonth = endOfMonth.getDate();
+        const remainingDays = daysInMonth - checkIn.getDate() + 1;
+        const dailyRate = monthlyRent / daysInMonth;
+
+        const calculated = Math.ceil(dailyRate * remainingDays);
+        setAmount(calculated);
+
+    }, [billingCycle, checkInDate, monthlyRent]);
+
+    const handleSave = async () => {
+        if (!contractId) return;
+
+        if (!billingCycle || !description.trim() || amount <= 0) {
+            setFormError('กรุณากรอกข้อมูลให้ครบถ้วน และจำนวนเงินต้องมากกว่า 0');
+            return;
+        }
+
+        setSaving(true);
+        setFormError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Authentication token not found');
+
+            const res = await fetch(`${API_BASE}/api/rentals/advances`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contract_id: contractId,
+                    billing_month: billingCycle,
+                    description,
+                    amount,
+                    payment_type: paymentTypeMap[paymentMethod],
+                    note: note || null
+                }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'ไม่สามารถบันทึกข้อมูลได้');
+            }
+
+            navigate(`/manage/${dormitoryId}/room/${roomId}/addcontract3/${contractId}`);
+
+        } catch (err: unknown) {
+            setFormError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดบางอย่าง');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const isFormValid = billingCycle && description.trim() && amount > 0;                  
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       
@@ -72,6 +188,14 @@ export default function AdvanceRent() {
         
         {/* Header อยู่คงที่ - เปลี่ยนเป็นแสดงชื่อหอพัก */}
         <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
+
+        {loading && (
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-50">
+            <div className="text-gray-600 text-sm font-medium">
+              Loading...
+            </div>
+          </div>
+        )}
 
         {/* ส่วนเนื้อหาหลัก */}
         <div className="flex-1 overflow-y-auto">
@@ -121,7 +245,7 @@ export default function AdvanceRent() {
                         <div className="mb-6">
                             <h3 className="text-lg font-bold text-gray-800">รับเงินค่าเช่าล่วงหน้า ตอนทำสัญญา</h3>
                             <p className="text-sm text-gray-600 mt-1">
-                                ระบบจะคำนวณเงินค่าเช่าล่วงหน้าให้โดยอัตโนมัติ โดยคำนวณจากวันที่ทำสัญญาจนถึงวันสิ้นเดือน
+                                ระบบจะคำนวณเงินค่าเช่าล่วงหน้าให้โดยอัตโนมัติ โดยคำนวณจากวันที่ทำสัญญาเข้าอยู่จนถึงวันสิ้นเดือน
                             </p>
                         </div>
                         
@@ -196,18 +320,27 @@ export default function AdvanceRent() {
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 resize-none"
                                 ></textarea>
                             </div>
+                            {formError && (
+                                <div className="mb-4 text-sm text-red-500">
+                                    {formError}
+                                </div>
+                            )}
                         </div>
 
                         {/* ปุ่ม Action */}
                         <div className="flex justify-end items-center gap-3 pt-6 border-t border-gray-100">
                             {/* ปรับ Link ไปยัง step ถัดไปให้มี dormitoryId ด้วย */}
-                            <Link to={`/manage/${dormitoryId}/room/${roomId}/addcontract3`}>
+                            <Link to={`/manage/${dormitoryId}/room/${roomId}/addcontract3/${contractId}`}>
                                 <button className="bg-white border border-gray-400 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-md transition-colors text-sm">
                                     ข้าม (ไม่รับเงินค่าเช่าล่วงหน้า)
                                 </button>
                             </Link>
-                            <button className="bg-[#7d7671] hover:bg-[#68625d] text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
-                                บันทึกและไปขั้นตอนถัดไป
+                            <button
+                                onClick={handleSave}
+                                disabled={saving || !isFormValid}
+                                className="bg-[#7d7671] hover:bg-[#68625d] text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm disabled:opacity-50"
+                            >
+                                {saving ? 'กำลังบันทึก...' : 'บันทึกและไปขั้นตอนถัดไป'}
                             </button>
                         </div>
 
@@ -221,3 +354,5 @@ export default function AdvanceRent() {
     </div>
   );
 }
+
+

@@ -8,7 +8,7 @@ import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
 export default function AddContract() {
-    const { dormitoryId, roomId } = useParams();
+    const { dormitoryId, roomId} = useParams();
     const navigate = useNavigate();
     const [dormitoryName, setDormitoryName] = useState<string>('');
     const [roomNumber, setRoomNumber] = useState<string>('');
@@ -42,18 +42,19 @@ export default function AddContract() {
             fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, {
             method: 'GET',
             headers,
-            }),
+            })
         ]);
 
-        if (!dormRes.ok || !roomRes.ok) {
+        if (!dormRes.ok || !roomRes.ok ) {
             throw new Error('API request failed');
         }
 
         const dormData = await dormRes.json();
         const roomData = await roomRes.json();
-
+        
         setDormitoryName(dormData.name);
         setRoomNumber(roomData.data.room_number);
+
     } catch (err: unknown) {
         if (err instanceof Error) {
             setError(err.message);
@@ -62,12 +63,12 @@ export default function AddContract() {
         }
     } finally {
         setLoading(false);
-    }
-}, [dormitoryId, roomId, API_BASE]);
+    };
+    }, [dormitoryId, roomId, API_BASE]);
 
-useEffect(() => {
-    fetchContract();
-}, [fetchContract]);
+    useEffect(() => {
+        fetchContract();
+    }, [fetchContract]);
 
   // --- States สำหรับฟอร์ม ---
   const [checkInDate, setCheckInDate] = useState('');
@@ -160,7 +161,10 @@ useEffect(() => {
             throw new Error(errData.error || 'API request failed');
         }
 
-        navigate(`/manage/${dormitoryId}/room/${roomId}/addcontract2`);
+        const data = await contractRes.json();
+        const newContractId = data.data.contract_id;
+        console.log('navigating to:', `/manage/${dormitoryId}/room/${roomId}/addcontract2/${newContractId}`);
+        navigate(`/manage/${dormitoryId}/room/${roomId}/addcontract2/${newContractId}`);
     } catch (err:unknown) {
         if (err instanceof Error) {
             setError (err.message);
