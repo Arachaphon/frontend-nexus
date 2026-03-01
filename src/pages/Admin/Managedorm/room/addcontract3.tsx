@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, Link, useNavigate} from 'react-router-dom';
 import { Home, ChevronRight } from 'lucide-react';
 
 // Import Components
@@ -8,11 +8,106 @@ import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
 export default function MeterReading() {
-  const { roomId } = useParams();
+    const { dormitoryId, roomId, contractId } = useParams();
+    const navigate = useNavigate();
+    const [dormitoryName, setDormitoryName] = useState<string>('');
+    const [roomNumber, setRoomNumber] = useState<string>('');
 
-  // State สำหรับเก็บข้อมูลเลขมิเตอร์
-  const [waterMeter, setWaterMeter] = useState('');
-  const [electricMeter, setElectricMeter] = useState('');
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
+
+    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+
+    // State สำหรับเก็บข้อมูลเลขมิเตอร์
+    const [waterMeter, setWaterMeter] = useState('');
+    const [electricMeter, setElectricMeter] = useState('');
+
+    const fetchContract = useCallback(async () => {
+        if (!dormitoryId || !roomId ) return;
+
+        try {
+            setLoading(true);
+            setError(null);
+
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Authentication token not found');
+
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            };
+
+            const [dormRes, roomRes] = await Promise.all([
+                fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { headers }),
+                fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { headers }),
+                fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}/${contractId}`, { headers }),
+            ]);
+
+            if (!dormRes.ok || !roomRes.ok ) {
+                throw new Error('API request failed');
+            }
+
+            const dormData = await dormRes.json();
+            const roomData = await roomRes.json();
+
+            setDormitoryName(dormData.name);
+            setRoomNumber(roomData.data.room_number);
+
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Unexpected error occurred');
+        } finally {
+            setLoading(false);
+        }
+    }, [dormitoryId, roomId, API_BASE]);
+
+    useEffect(() => {
+        fetchContract();
+    }, [fetchContract]);
+
+    const handleSave = async () => {
+        if (!waterMeter || !electricMeter) {
+            setError('กรุณากรอกเลขมิเตอร์ให้ครบถ้วน');
+            return;
+        }
+
+        try {
+            setSaving(true);
+            setError(null);
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Authentication token not found');
+
+            const res = await fetch(`${API_BASE}/api/meters`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    room_id: roomId,
+                    contract_id: contractId,
+                    reading_date: new Date().toISOString(),
+                    water_unit_current: Number(waterMeter),
+                    electric_unit_current: Number(electricMeter),
+                })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'ไม่สามารถบันทึกข้อมูลได้');
+            }
+
+            navigate(`/manage/room/${roomId}/roominfo`);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError (err.message);
+            } else {
+                setError('Unexpected Error occurred')
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
@@ -24,7 +119,12 @@ export default function MeterReading() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Header อยู่คงที่ */}
-        <C_HomeMain title="หอพัก: A" />
+        <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
+        {loading && (
+            <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-50">
+                <div className="text-gray-600 text-sm font-medium">Loading...</div>
+            </div>
+        )}
 
         {/* ส่วนเนื้อหาหลัก */}
         <div className="flex-1 overflow-y-auto">
@@ -41,7 +141,7 @@ export default function MeterReading() {
                          </Link>
                          <ChevronRight className="w-4 h-4 text-gray-400" />
                          <Link to={`/manage/room/${roomId}`} className="hover:text-emerald-600">
-                             ข้อมูล ห้อง {roomId || '101'}
+                            ข้อมูล ห้อง {roomNumber || '-' }
                          </Link>
                          <ChevronRight className="w-4 h-4 text-gray-400" />
                          <span className="text-gray-700 font-medium">เพิ่มสัญญา</span>
@@ -90,7 +190,8 @@ export default function MeterReading() {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">เลขมิเตอร์ค่าน้ำ <span className="text-red-500">*</span></label>
                                 <input 
-                                    type="text" 
+                                    type="number"
+                                    min="0" 
                                     value={waterMeter}
                                     onChange={(e) => setWaterMeter(e.target.value)}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" 
@@ -99,7 +200,8 @@ export default function MeterReading() {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">เลขมิเตอร์ค่าไฟ <span className="text-red-500">*</span></label>
                                 <input 
-                                    type="text" 
+                                    type="number"
+                                    min="0"
                                     value={electricMeter}
                                     onChange={(e) => setElectricMeter(e.target.value)}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" 
@@ -109,12 +211,12 @@ export default function MeterReading() {
 
                         {/* ปุ่ม Action ด้านล่าง */}
                         <div className="flex justify-end pt-2 max-w-3xl mx-auto">
-                            <Link 
-                                to={`/manage/room/${roomId}/roominfo`} /* เปลี่ยนพาทให้ตรงกับที่คุณตั้งไว้ใน Router */
-                                className="bg-[#7d7671] hover:bg-[#68625d] text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm text-center"
-                            >
-                                บันทึก
-                            </Link>
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="bg-[#7d7671] hover:bg-[#68625d] text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm text-center disabled:opacity-50">
+                                {saving ? 'กำลังบันทึก...' : 'บันทึก'}
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -204,7 +204,7 @@ export default function AddContract() {
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                         <Link to={`/manage/${dormitoryId}/room/${roomId}`} className="hover:text-emerald-600">
-                            ข้อมูล ห้อง {roomNumber }
+                            ข้อมูล ห้อง {roomNumber || '-' }
                         </Link>
                         <ChevronRight className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-700 font-medium">เพิ่มสัญญา</span>
