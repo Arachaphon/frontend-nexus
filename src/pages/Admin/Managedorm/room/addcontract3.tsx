@@ -86,7 +86,7 @@ export default function MeterReading() {
                 body: JSON.stringify({
                     room_id: roomId,
                     contract_id: contractId,
-                    reading_date: new Date().toISOString(),
+                    reading_date: new Date().toISOString().split('T')[0],
                     water_unit_current: Number(waterMeter),
                     electric_unit_current: Number(electricMeter),
                 })
