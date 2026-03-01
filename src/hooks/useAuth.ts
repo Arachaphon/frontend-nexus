@@ -11,16 +11,3 @@ export function useAuth() {
 }
 
 
-// // ใช้ใน component
-// const { isOwner } = useAuth()
-// return (
-//     <div>
-//         {/* ทุกคนเห็น */}
-//         <RoomList />
-
-//         {/* owner เท่านั้น */}
-//         {isOwner && <BillingButton />}
-//         {isOwner && <SettingsButton />}
-//     </div>
-// )
-

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
+import { useAuth } from '../../../hooks/useAuth'
 
 const GreenCheckIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -13,6 +14,7 @@ const GreenCheckIcon = () => (
 const API_BASE = window.__ENV__?.API_BASE || 'https://backend-nexus.67023031-devops.workers.dev';
 
 const HomeMain = () => {
+  const { isOwner } = useAuth()
   const [activeTab, setActiveTab] = useState('dormitory');
   const [dormitories, setDormitories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,25 +58,27 @@ const HomeMain = () => {
   };
 
   const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE}/api/staff`, { 
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-          // ดึงข้อมูลมาใส่ state 'users' เพื่อเอาไป map ลงตาราง
-          setUsers(result.data); 
-        } else {
-          console.error("Backend error:", result.message);
-        }
-      } catch (error) {
-        console.error("Network error:", error);
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${API_BASE}/api/staff`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        setUsers(result.data)
+      } else if (response.status === 403) {
+        console.warn('ไม่มีสิทธิ์เข้าหน้าจัดการผู้ใช้')
+        setUsers([])
+      } else {
+        console.error('Backend error:', result.message)
       }
-    };
+    } catch (error) {
+      console.error('Network error:', error)
+    }
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -200,18 +204,19 @@ const HomeMain = () => {
               </svg>
               จัดการหอพัก
             </button>
-
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
-                activeTab === 'users' ? 'text-[#0e4b3a] border-[#0e4b3a]' : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-              จัดการผู้ใช้งาน
-            </button>
+            {isOwner && (
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
+                  activeTab === 'users' ? 'text-[#0e4b3a] border-[#0e4b3a]' : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                จัดการผู้ใช้งาน
+              </button>
+            )}
           </div>
 
           <div className="mt-4 md:mt-0 w-[120px] flex justify-end">
