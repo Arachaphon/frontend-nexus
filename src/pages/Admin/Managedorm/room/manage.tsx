@@ -132,16 +132,6 @@ export default function Manage() {
       iconColor: 'text-green-600'
     },
     {
-      label: 'จองล่วงหน้า',
-      value: statsData.occupied,
-      unit: 'ห้อง',
-      icon: <Calendar className="w-5 h-5" />,
-      borderColor: 'border-orange-400',
-      textColor: 'text-orange-500',
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-500'
-    },
-    {
       label: 'ค้างชำระ',
       value: statsData.pending,
       unit: 'ห้อง',
@@ -173,11 +163,12 @@ export default function Manage() {
             </div>
             
             {/* Stats Cards Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div className="flex flex-wrap justify-center gap-5 mb-8">
               {stats.map((stat, index) => (
                 <div
                   key={index}
-                  className={`bg-white rounded-2xl border-2 ${stat.borderColor} p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow`}
+                  // เพิ่ม w-full md:w-[320px] เพื่อคุมขนาดการ์ดให้เท่ากันและสวยงาม
+                  className={`w-full md:w-[320px] bg-white rounded-2xl border-2 ${stat.borderColor} p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`${stat.iconBg} p-2.5 rounded-xl ${stat.iconColor}`}>
@@ -212,11 +203,10 @@ export default function Manage() {
                     <tr>
                       <th className="px-6 py-4 font-semibold text-center w-[100px]">ห้อง</th>
                       <th className="px-6 py-4 font-semibold text-center w-[120px]">สถานะ</th>
-                      <th className="px-6 py-4 font-semibold text-center">ลูกค้า</th>
+                      <th className="px-6 py-4 font-semibold text-center">ผู้เช่า</th>
                       <th className="px-6 py-4 font-semibold text-center">ประเภท</th>
                       <th className="px-6 py-4 font-semibold text-center">ค่าเช่า</th>
                       <th className="px-6 py-4 font-semibold text-center">แจ้งออก</th>
-                      <th className="px-6 py-4 font-semibold text-center">จองล่วงหน้า</th>
                       <th className="px-6 py-4 font-semibold text-right">ค้างชำระ</th>
                     </tr>
                   </thead>
@@ -239,21 +229,19 @@ export default function Manage() {
                             {room.status === 'vacant' ? 'ว่าง' : 'มีผู้เช่า'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-right">
-                          {/* สามารถเก็บ Link ไว้หรือเอาออกก็ได้ เพราะทั้งแถวคลิกได้แล้ว */}
+                        <td className="px-6 py-4 text-center text-gray-400">เงินสด</td>
+                        <td className="px-6 py-4 text-center text-gray-400">รายเดือน</td>
+                        <td className="px-6 py-4 text-center text-gray-400">3500</td>
+                        <td className="px-6 py-4 text-center text-gray-400">30/5/2569</td>
+                        <td className="px-6 py-4 text-right text-red-500">ค้างชำระ</td>
+                          
                           <Link 
                             to={`/manage/${dormitoryId}/room/${room.id}`}
                             className="text-gray-500 hover:text-emerald-600 underline text-xs font-medium transition-colors"
                             onClick={(e) => e.stopPropagation()} // ป้องกันไม่ให้ Event การคลิกซ้อนทับกัน
                           >
-                            ข้อมูล
-                          </Link>
-                        </td>
+                            
+                          </Link>                       
                       </tr>
                     ))}
                   </tbody>

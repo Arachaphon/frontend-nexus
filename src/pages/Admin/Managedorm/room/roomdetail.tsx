@@ -116,75 +116,17 @@ export default function RoomDetail() {
 
             {/* Right Column: Waiting Lists & Tenants */}
             <div className="lg:col-span-9 flex flex-col gap-6">
-              
-              {/* Card 1: รายชื่อคนจองรอเข้าพัก */}
+              {/* Card 1: ผู้เช่าปัจจุบัน */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                
+
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
                   <div>
-                    <h3 className="font-semibold text-gray-700">รายชื่อคนจองรอเข้าพัก</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">เพิ่มรายการจองก่อนเข้าพัก</p>
-                  </div>
-                  <button className="bg-gray-500 hover:bg-gray-600 text-white text-xs px-4 py-1.5 rounded-lg transition-colors">
-                    เพิ่ม
-                  </button>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-[#f2f2f2] text-gray-600 font-medium border-b">
-                      <tr>
-                        <th className="px-4 py-3">เลขที่ / วันที่จอง</th>
-                        <th className="px-4 py-3 text-center">ประเภท</th>
-                        <th className="px-4 py-3">ลูกค้า</th>
-                        <th className="px-4 py-3">วันที่เข้าพัก</th>
-                        <th className="px-4 py-3 text-center">ราคา</th>
-                        <th className="px-4 py-3 text-center">สถานะ</th>
-                        <th className="px-4 py-3"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {/* ข้อมูล Mockup ตัวอย่าง */}
-                      <tr className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-4">
-                          <div className="text-gray-700 font-medium">B2026020003</div>
-                          <div className="text-gray-400 text-[10px]">วันจอง 15-2-2569</div>
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <div className="flex items-center justify-center gap-1 text-blue-600">
-                            <Calendar size={13} /> <span>รายเดือน</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="text-gray-700">ชื่อ: เงินสด</div>
-                          <div className="text-gray-400 flex items-center gap-1"><Phone size={11}/> 1234567890</div>
-                        </td>
-                        <td className="px-4 py-4 text-gray-600">
-                          เข้า: 30-2-2569
-                        </td>
-                        <td className="px-4 py-4 text-center font-medium">10.00</td>
-                        <td className="px-4 py-4 text-center">
-                          <span className="bg-orange-50 text-orange-500 border border-orange-100 px-2 py-0.5 rounded text-[10px] font-bold">รอเข้าพัก</span>
-                        </td>
-                        <td className="px-4 py-4 text-right">
-                          <div className="flex flex-col gap-1 items-end">
-                            <button className="text-emerald-600 underline hover:text-emerald-700">เข้าพัก</button>
-                            <button className="text-gray-500 underline hover:text-gray-700">แก้ไข</button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  {/* Empty state fallback */}
-                  <div className="hidden py-10 text-center text-gray-400 bg-gray-50 italic">
-                    ไม่มีรายการจองในห้องนี้
+                    <h3 className="font-semibold text-gray-700">ผู้เช่าปัจจุบัน</h3>
+                    
                   </div>
                 </div>
-              </div>
 
-              {/* Card 2: ผู้เช่าปัจจุบัน */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-white">
-                   <h3 className="font-semibold text-gray-700">ผู้เช่าปัจจุบัน</h3>
-                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
                     <thead className="bg-[#f2f2f2] text-gray-600 font-medium border-b">
@@ -223,11 +165,7 @@ export default function RoomDetail() {
                     </tbody>
                   </table>
                 </div>
-                <div className="p-3 flex justify-end bg-gray-50/50">
-                  <button className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-1.5 rounded-lg text-xs transition-colors font-medium">
-                    ดูทั้งหมด
-                  </button>
-                </div>
+
               </div>
 
             </div>
