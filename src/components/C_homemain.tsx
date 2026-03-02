@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth'
 interface CHomeMainProps {
-  title?: string; // เครื่องหมาย ? แปลว่า ส่งหรือไม่ส่งก็ได้
+  title?: string; 
 }
 
 export default function DormitoryLayout({ title }: CHomeMainProps) {
     const navigate = useNavigate();
+    const { isOwner } = useAuth()
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [username, setUsername] = useState('Loading...');
 
@@ -66,14 +68,16 @@ export default function DormitoryLayout({ title }: CHomeMainProps) {
 
                     {isDropdownOpen && (
                         <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg overflow-hidden z-30">
-                            <Link to="/homemain/profilesettings" onClick={() => setIsDropdownOpen(false)}>
-                                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 border-b border-gray-200 text-left">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    โปรไฟล์
-                                </button>
-                            </Link>
+                            {isOwner && (
+                                <Link to="/homemain/profilesettings" onClick={() => setIsDropdownOpen(false)}>
+                                    <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 border-b border-gray-200 text-left">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        โปรไฟล์
+                                    </button>
+                                </Link>
+                            )}
                             <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 text-left">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

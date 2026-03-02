@@ -218,14 +218,15 @@ const HomeMain = () => {
               </button>
             )}
           </div>
-
-          <div className="mt-4 md:mt-0 w-[120px] flex justify-end">
-            {activeTab === 'dormitory' && (
-              <Link to="/homemain/adddormitory">
-                <button className="bg-[#7d7671] hover:bg-[#68625d] text-white px-6 py-3 rounded-md shadow-sm text-sm font-medium transition-colors">เพิ่มหอพัก</button>
-              </Link>
-            )}
-          </div>
+          {isOwner && (
+            <div className="mt-4 md:mt-0 w-[120px] flex justify-end">
+              {activeTab === 'dormitory' && (
+                <Link to="/homemain/adddormitory">
+                  <button className="bg-[#7d7671] hover:bg-[#68625d] text-white px-6 py-3 rounded-md shadow-sm text-sm font-medium transition-colors">เพิ่มหอพัก</button>
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mt-2 flex-grow w-full"> 
