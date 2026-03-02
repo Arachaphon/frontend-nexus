@@ -102,9 +102,9 @@ const HomeMain = () => {
     if (mode === 'edit' && user) {
       setEditUserId(user.id);
       setFormData({
-        full_name: user.full_name || '', // แก้จาก user.username เป็น user.full_name
-        phone: user.phone || '',        // แก้จาก user.phoneNumber เป็น user.phone
-        role: user.role,                // รับค่า 'owner' หรือ 'manager'
+        full_name: user.full_name || '', 
+        phone: user.phone || '',        
+        role: user.role,                
         email: user.email || '',
         password: '..........', 
         is_active: user.is_active ?? true
@@ -128,12 +128,10 @@ const HomeMain = () => {
     }
   };
 
-// ... (ส่วนบนของไฟล์คงเดิม)
 
   const handleSave = async () => {
     const token = localStorage.getItem('token');
     
-    // เตรียม Payload ให้ตรงกับที่ Backend รอรับ
     const payload: any = { 
       username: formData.full_name,
       phoneNumber: formData.phone,
@@ -143,21 +141,13 @@ const HomeMain = () => {
       dorm_ids: selectedDormIds 
     };
 
-    // ระบบจัดการรหัสผ่านเดิม (ถ้าเป็นจุดไข่ปลา ไม่ต้องส่งไปให้ Backend update)
-    if (modalMode === 'edit') {
-      // ดึง dormId อันแรกมาใช้ใน Path ตามโครงสร้าง /:dormId/staff/:userId
-      const dormId = selectedDormIds[0] || 'default'; 
-      url = `${API_BASE}/api/staff/${dormId}/staff/${editUserId}`;
-      method = 'PATCH'; // เปลี่ยนจาก PUT เป็น PATCH ตามหลังบ้าน
-    }
-
     try {
-      // ปรับ URL และ Method ให้ตรงกับ Backend ใหม่
+
       const url = modalMode === 'add' 
-        ? `${API_BASE}/api/staff` 
-        : `${API_BASE}/api/staff/${editUserId}`;
-        
-      const method = modalMode === 'add' ? 'POST' : 'PATCH'; // แก้จาก PUT เป็น PATCH
+        ? `${API_BASE}/api/staff`          
+        : `${API_BASE}/api/staff/${editUserId}`;  
+
+      const method = modalMode === 'add' ? 'POST' : 'PATCH';
 
       const response = await fetch(url, {
         method: method,
@@ -181,8 +171,6 @@ const HomeMain = () => {
       alert("เกิดข้อผิดพลาดในการเชื่อมต่อ API");
     }
   };
-
-// ... (ส่วนที่เหลือของไฟล์คงเดิม ไม่มีการแก้ UI)
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
@@ -218,7 +206,6 @@ const HomeMain = () => {
               </button>
             )}
           </div>
-          {isOwner && (
             <div className="mt-4 md:mt-0 w-[120px] flex justify-end">
               {activeTab === 'dormitory' && (
                 <Link to="/homemain/adddormitory">
@@ -226,7 +213,6 @@ const HomeMain = () => {
                 </Link>
               )}
             </div>
-          )}
         </div>
 
         <div className="mt-2 flex-grow w-full"> 
