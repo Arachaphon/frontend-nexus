@@ -25,15 +25,27 @@ interface Room {
   id: string;
   room_number: string;
   status: string;
-  current_rent_price: number;
 }
 
 interface LayoutContextType {
   setPageTitle: (title: string) => void;
 }
 
+interface Contract {
+  id: string
+  room_id: string
+  rent_price: number
+  check_out_date: string | null  
+}
+
+const statusMap: Record<string, string> = {
+  vacant: 'ว่าง',
+  occupied: 'มีผู้เช่า',
+  pending: 'รอเข้าอยู่'
+}
+
 export default function Manage() {
-  const { dormitoryId } = useParams();
+  const { dormitoryId} = useParams();
   const navigate = useNavigate(); // เรียกใช้งาน navigate สำหรับเปลี่ยนหน้า
   const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
   const [statsData, setStatsData] = useState({
@@ -44,6 +56,8 @@ export default function Manage() {
   });
   const [rooms, setRooms] = useState<Room[]>([]);
   const [dormitoryName, setDormitoryName] = useState<string>('');
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [contract, setContract] = useState<Contract[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const context = useOutletContext<LayoutContextType>();
   const setPageTitle = context ? context.setPageTitle : null;
@@ -68,13 +82,15 @@ export default function Manage() {
           'Content-Type': 'application/json'
         };
 
-        const [statsRes, roomsRes, dormRes] = await Promise.all([
+        const [statsRes, roomsRes, dormRes , tenantRes , contractRes] = await Promise.all([
           fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}/stats`, { method:'GET', headers }),
           fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {method:'GET', headers }),
-          fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {method:'GET', headers })
+          fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {method:'GET', headers }),
+          fetch(`${API_BASE}/api/rentals/tenants/dormitories/${dormitoryId}`, { method: 'GET', headers }),
+          fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}`, { method: 'GET', headers }),
         ]);
 
-        if (!statsRes.ok || !roomsRes.ok) {
+        if (!statsRes.ok || !dormRes.ok || !roomsRes.ok || !contractRes.ok || !tenantRes.ok) {
           console.error('API request failed:', statsRes.status, roomsRes.status);
           return;
         }
@@ -96,6 +112,12 @@ export default function Manage() {
         if (dormRes.ok) {
           setDormitoryName(dormJson.name);
         }
+
+      const tenantData = await tenantRes.json();
+      const contractData = await contractRes.json();
+
+      setTenants(tenantData.data || []);
+      setContract(contractData.data) 
 
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -226,13 +248,37 @@ export default function Manage() {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span className="bg-cyan-50 text-cyan-600 border border-cyan-100 px-3 py-1 rounded-full text-xs font-bold inline-block min-w-[60px]">
-                            {room.status === 'vacant' ? 'ว่าง' : 'มีผู้เช่า'}
+                            {statusMap[room.status] || '-'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center text-gray-400">เงินสด</td>
+                        <td className="px-6 py-4 text-center text-gray-400">
+                          {
+                            (() => {
+                              const t = tenants.find(x => x.room_id === room.id)
+                              return t?.first_name && t?.last_name
+                                ? `${t.first_name} ${t.last_name}`
+                                : '-'
+                            })()
+                          }
+                        </td>
                         <td className="px-6 py-4 text-center text-gray-400">รายเดือน</td>
-                        <td className="px-6 py-4 text-center text-gray-400">3500</td>
-                        <td className="px-6 py-4 text-center text-gray-400">30/5/2569</td>
+                        <td className="px-6 py-4 text-center text-gray-400">
+                          {
+                            (() => {
+                              const c = contract.find(x => x.room_id === room.id)
+                              return c?.rent_price ?? '-'
+                            })()
+                          }
+                        </td>
+                        <td className="px-6 py-4 text-center text-gray-400">
+                          {
+                            (() => {
+                              const c = contract.find(x => x.room_id === room.id)
+                              return c?.check_out_date ?? '-'
+                            })()
+                          }
+                        </td>
+                        
                         <td className="px-6 py-4 text-right text-red-500">ค้างชำระ</td>
                           
                           <Link 
