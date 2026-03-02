@@ -13,12 +13,39 @@ declare global {
   }
 }
 
+interface Room {
+  id: string;
+  room_number: string;
+  status: string;
+  current_rent_price: number;
+}
+
+interface Tenant {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  contract_id: string;
+  is_primary: number;
+}
+
+interface Contract {
+  id: string;
+  room_id: string;
+  rent_price: number;
+  check_in_date: string;
+  check_out_date: string | null;
+  tenants: Tenant[];
+}
+
 export default function RoomDetail() {
   const { dormitoryId, roomId } = useParams();
   const navigate = useNavigate();
 
   const [dormitoryName, setDormitoryName] = useState<string>('');
-  const [roomNumber, setRoomNumber] = useState<string>('');
+  const [room, setRoom] = useState<Room | null>(null); 
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [contract, setContract] = useState<Contract[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,19 +66,25 @@ export default function RoomDetail() {
         'Content-Type': 'application/json',
       };
 
-      const [dormRes, roomRes] = await Promise.all([
+      const [dormRes, roomRes , tenantRes, contractRes] = await Promise.all([
         fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { method: 'GET', headers }),
         fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { method: 'GET', headers }),
+        fetch(`${API_BASE}/api/rentals/tenants/dormitories/${dormitoryId}/rooms/${roomId}`, { method: 'GET', headers }),
+        fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}/rooms/${roomId}`, { method: 'GET', headers }),
       ]);
 
-      if (!dormRes.ok || !roomRes.ok) throw new Error('API request failed');
+      if (!dormRes.ok || !roomRes.ok || !contractRes.ok || !tenantRes.ok) throw new Error('API request failed');
 
       const dormData = await dormRes.json();
       const roomData = await roomRes.json();
+      const tenantData = await tenantRes.json();
+      const contractData = await contractRes.json();
 
-      // ดักโครงสร้างข้อมูลเผื่อกรณี API ส่งกลับมาต่างกัน
       setDormitoryName(dormData.data?.name || dormData.name || '');
-      setRoomNumber(roomData.data?.room_number || roomData.room_number || '');
+      setRoom(roomData.data);
+      setTenants(tenantData.data || []);
+      setContract(contractData.data) 
+
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unexpected error');
     } finally {
@@ -85,16 +118,16 @@ export default function RoomDetail() {
                 <span>ห้อง</span>
               </Link>
               <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-700 font-medium">ข้อมูล ห้อง {roomNumber}</span>
+              <span className="text-gray-700 font-medium">ข้อมูล ห้อง {room?.room_number}</span>
             </div>
             <hr className="border-gray-300 w-full" />
           </div>
 
           {/* Room Title & Status */}
           <div className="flex items-center gap-4 mb-8">
-            <h1 className="text-2xl font-bold text-gray-700">ห้อง : {roomNumber}</h1>
+            <h1 className="text-2xl font-bold text-gray-700">ห้อง : {room?.room_number}</h1>
             <span className="bg-cyan-50 text-cyan-600 border border-cyan-100 px-3 py-1 rounded-md text-sm font-bold shadow-sm">
-              ว่าง
+              {room?.status === 'vacant' ? 'ว่าง' : room?.status === 'occupied' ? 'มีผู้เช่า' : '-'}
             </span>
           </div>
 
@@ -138,30 +171,43 @@ export default function RoomDetail() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {/* ข้อมูล Mockup ตัวอย่าง */}
-                      <tr className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-4">
-                          <div className="text-gray-600">เข้า: 10-10-1010</div>
-                          <div className="text-gray-600">ออก: 30-6-2569</div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-1 text-blue-600 font-medium">
-                            <Calendar size={14} /> รายเดือน
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="text-gray-800 font-medium">นาย ก</div>
-                          <div className="text-gray-400 flex items-center gap-1"><Phone size={12}/> 0123456789</div>
-                        </td>
-                        <td className="px-4 py-4 text-right">
-                          <Link 
-                            to={`/manage/${dormitoryId}/room/${roomId}/roominfo`}
-                            className="text-gray-500 underline hover:text-emerald-600 font-medium"
-                          >
-                            รายละเอียด
-                          </Link>
-                        </td>
-                      </tr>
+                      {contract.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-4 py-6 text-center text-gray-400">ไม่มีสัญญา</td>
+                        </tr>
+                      ) : (
+                        contract.map((con) => (
+                          <tr key={con.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-4">
+                              <div className="text-gray-600">เข้า: {con.check_in_date}</div>
+                              <div className="text-gray-600">ออก: {con.check_out_date ?? '-'}</div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-1 text-blue-600 font-medium">
+                                <Calendar size={14} /> รายเดือน
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              {con.tenants?.filter(t => t.is_primary === 1).map(t => (
+                                <div key={t.id}>
+                                  <div className="text-gray-800 font-medium">{t.first_name} {t.last_name}</div>
+                                  <div className="text-gray-400 flex items-center gap-1">
+                                    <Phone size={12}/> {t.phone_number}
+                                  </div>
+                                </div>
+                              ))}
+                            </td>
+                            <td className="px-4 py-4 text-right">
+                              <Link 
+                                to={`/manage/${dormitoryId}/room/${roomId}/contract/${con.id}`}
+                                className="text-gray-500 underline hover:text-emerald-600 font-medium"
+                              >
+                                รายละเอียด
+                              </Link>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
