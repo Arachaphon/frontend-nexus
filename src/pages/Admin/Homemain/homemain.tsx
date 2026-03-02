@@ -248,7 +248,7 @@ const HomeMain = () => {
                             </div>
                             <div className="border border-gray-400 px-2 py-2 flex flex-col items-center flex-1">
                                 <div className="text-gray-800"><span className="text-lg font-medium">0</span></div>
-                                <span className="text-[10px] text-gray-500">บิลค้างชำระ</span>
+                                <span className="text-[10px] text-gray-500">บิลรายเดือน</span>
                             </div>
                         </div>
                     </div>
