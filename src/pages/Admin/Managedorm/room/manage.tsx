@@ -75,6 +75,11 @@ export default function Manage() {
         ]);
 
         if (!statsRes.ok || !roomsRes.ok) {
+          if (statsRes.status === 403 || roomsRes.status === 403) {
+            window.location.href = '/homemain'
+            return
+          }
+
           console.error('API request failed:', statsRes.status, roomsRes.status);
           return;
         }
