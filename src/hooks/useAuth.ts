@@ -6,8 +6,8 @@ export function useAuth() {
         user,
         isOwner: user?.role === 'owner',
         isManager: user?.role === 'manager',
+        isLandlord: user?.global_role === 'landlord',
+        isOwnerOrLandlord: user?.role === 'owner' || user?.global_role === 'landlord', // ✅
         isLoggedIn: !!user,
     }
 }
-
-

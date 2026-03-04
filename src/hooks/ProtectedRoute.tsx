@@ -6,7 +6,7 @@ export default function ProtectedRoute({
   requiredRole 
 }: { 
   readonly children: React.ReactNode
-  readonly requiredRole?: 'owner' | 'manager'
+  readonly requiredRole?: 'owner' | 'manager' | 'landlord' | 'owner|landlord'
 }) {
   const token = localStorage.getItem('token')
   const raw = localStorage.getItem('userSession')
@@ -16,8 +16,17 @@ export default function ProtectedRoute({
     return <Navigate to="/login" replace />
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/homemain" replace />
+  if (requiredRole) {
+    if (requiredRole === 'owner|landlord') {
+      const allowed = user?.role === 'owner' || user?.global_role === 'landlord'
+      if (!allowed) return <Navigate to="/homemain" replace />
+    } 
+    else if (requiredRole === 'landlord') {
+      if (user?.global_role !== 'landlord') return <Navigate to="/homemain" replace />
+    }
+    else {
+      if (user?.role !== requiredRole) return <Navigate to="/homemain" replace />
+    }
   }
 
   return <>{children}</>

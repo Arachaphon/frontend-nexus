@@ -14,7 +14,7 @@ const GreenCheckIcon = () => (
 const API_BASE = window.__ENV__?.API_BASE || 'https://backend-nexus.67023031-devops.workers.dev';
 
 const HomeMain = () => {
-  const { isOwner } = useAuth()
+  const { isOwnerOrLandlord } = useAuth()
   const [activeTab, setActiveTab] = useState('dormitory');
   const [dormitories, setDormitories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +89,6 @@ const HomeMain = () => {
 
     const initData = async () => {
       setLoading(true);
-      // โหลดทั้งข้อมูลหอพักและรายชื่อเจ้าหน้าที่/เจ้าของ
       await Promise.all([fetchDormitories(), fetchUsers()]);
       setLoading(false);
     };
@@ -192,7 +191,7 @@ const HomeMain = () => {
               </svg>
               จัดการหอพัก
             </button>
-            {isOwner && (
+            {isOwnerOrLandlord && (
               <button
                 onClick={() => setActiveTab('users')}
                 className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
@@ -206,6 +205,7 @@ const HomeMain = () => {
               </button>
             )}
           </div>
+          {isOwnerOrLandlord && (
             <div className="mt-4 md:mt-0 w-[120px] flex justify-end">
               {activeTab === 'dormitory' && (
                 <Link to="/homemain/adddormitory">
@@ -213,6 +213,7 @@ const HomeMain = () => {
                 </Link>
               )}
             </div>
+          )}
         </div>
 
         <div className="mt-2 flex-grow w-full"> 
