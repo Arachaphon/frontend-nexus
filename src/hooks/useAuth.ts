@@ -6,21 +6,8 @@ export function useAuth() {
         user,
         isOwner: user?.role === 'owner',
         isManager: user?.role === 'manager',
+        isLandlord: user?.global_role === 'landlord',
+        isOwnerOrLandlord: user?.role === 'owner' || user?.global_role === 'landlord', // ✅
         isLoggedIn: !!user,
     }
 }
-
-
-// // ใช้ใน component
-// const { isOwner } = useAuth()
-// return (
-//     <div>
-//         {/* ทุกคนเห็น */}
-//         <RoomList />
-
-//         {/* owner เท่านั้น */}
-//         {isOwner && <BillingButton />}
-//         {isOwner && <SettingsButton />}
-//     </div>
-// )
-

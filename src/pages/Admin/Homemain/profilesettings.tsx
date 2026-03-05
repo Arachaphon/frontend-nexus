@@ -40,6 +40,12 @@ const ProfileSettings: React.FC = () => {
           'Authorization': `Bearer ${token}` 
         }
       });
+
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
+
       const data = await response.json();
       
       if (data && !data.error) {

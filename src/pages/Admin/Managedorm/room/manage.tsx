@@ -90,7 +90,12 @@ export default function Manage() {
           fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}`, { method: 'GET', headers }),
         ]);
 
-        if (!statsRes.ok || !dormRes.ok || !roomsRes.ok || !contractRes.ok || !tenantRes.ok) {
+        if (!statsRes.ok || !roomsRes.ok) {
+          if (statsRes.status === 403 || roomsRes.status === 403) {
+            window.location.href = '/homemain'
+            return
+          }
+
           console.error('API request failed:', statsRes.status, roomsRes.status);
           return;
         }
