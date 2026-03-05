@@ -40,8 +40,7 @@ interface Contract {
 
 const statusMap: Record<string, string> = {
   vacant: 'ว่าง',
-  occupied: 'มีผู้เช่า',
-  pending: 'รอเข้าอยู่'
+  occupied: 'ไม่ว่าง'
 }
 
 export default function Manage() {

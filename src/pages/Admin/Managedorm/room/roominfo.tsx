@@ -15,10 +15,24 @@ declare global {
   }
 }
 
+interface Room {
+  id: string;
+  room_number: string;
+  status: string;
+}
+
+const statusMap: Record<string, string> = {
+  vacant: 'ว่าง',
+  occupied: 'ไม่ว่าง'
+}
+
+
 export default function RoomInfo() {
     const { dormitoryId, roomId } = useParams();
     const [dormitoryName, setDormitoryName] = useState<string>('');
-    const [roomNumber, setRoomNumber] = useState<string>('');
+    const [room, setRoom] = useState<Room | null>(null);
+    const [tenants, setTenants] = useState<Tenant[]>([]);
+    const [contract, setContract] = useState<Contract[]>([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null); 
     const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
@@ -46,10 +60,17 @@ export default function RoomInfo() {
                     'Content-Type': 'application/json'
                 };
 
-                const [dormRes, roomRes] = await Promise.all([
+                const [dormRes, roomRes, tenantRes , contractRes] = await Promise.all([
                     fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { method: 'GET', headers }),
-                    fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { method: 'GET', headers })
+                    fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { method: 'GET', headers }),
+                    fetch(`${API_BASE}/api/rentals/tenants/dormitories/${dormitoryId}`, { method: 'GET', headers }),
+                    fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}`, { method: 'GET', headers }),
                 ]);
+
+                if (dormRes.status === 403 || roomRes.status === 403) {
+                    window.location.href = '/homemain'
+                    return
+                }
 
                 if (!dormRes.ok || !roomRes.ok) {
                     console.error('API request failed:', dormRes.status, roomRes.status);
@@ -57,14 +78,12 @@ export default function RoomInfo() {
                 }
 
                 const dormData = await dormRes.json();
-                console.log("DORM RESPONSE:", dormData);
-                setDormitoryName(dormData.data.name);
+                setDormitoryName(dormData.name);
 
                 const roomData = await roomRes.json();
-                console.log("ROOM RESPONSE:", roomData);
-                setRoomNumber(roomData.data.room_number);
+                setRoom(roomData.data);
             } catch (err) {
-                console.error('Unexpected error:', err); 
+                setError(err instanceof Error ? err.message : 'Unexpected error');
             } finally {
                 setLoading(false);
             }
@@ -145,7 +164,7 @@ export default function RoomInfo() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <C_HomeMain title={`หอพัก: ${dormitoryName || 'A'}`} />
+        <C_HomeMain title={`หอพัก: ${dormitoryName || '-'}`} />
 
         {/* ส่วนเนื้อหาหลัก */}
         <div className="flex-1 overflow-y-auto">
@@ -162,7 +181,7 @@ export default function RoomInfo() {
                          <ChevronRight className="w-4 h-4 text-gray-400" />
                          
                          <Link to={`/manage/${dormitoryId}/room/${roomId}/roominfo`} className="hover:text-emerald-600">
-                             ข้อมูล ห้อง {roomNumber || roomId}
+                             ข้อมูล ห้อง {room?.room_number}
                          </Link>
 
                          <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -180,9 +199,9 @@ export default function RoomInfo() {
                         
                         {/* Header ห้อง */}
                         <div className="flex items-start sm:items-center gap-3 mb-4 flex-col sm:flex-row">
-                            <h2 className="text-2xl font-normal text-gray-800 break-all">ห้อง : {roomNumber || roomId}</h2>
+                            <h2 className="text-2xl font-normal text-gray-800 break-all">ห้อง : {room?.room_number}</h2>
                             <span className="bg-[#ff9b50] text-white text-xs px-3 py-1 rounded-sm whitespace-nowrap mt-1 sm:mt-0">
-                                ไม่ว่าง
+                                {statusMap[room?.status ?? ''] ?? '-'}
                             </span>
                         </div>
 

@@ -199,7 +199,7 @@ export default function RoomDetail() {
                             </td>
                             <td className="px-4 py-4 text-right">
                               <Link 
-                                to={`/manage/${dormitoryId}/room/${roomId}/contract/${con.id}`}
+                                to={`/manage/${dormitoryId}/room/${roomId}/roominfo`}
                                 className="text-gray-500 underline hover:text-emerald-600 font-medium"
                               >
                                 รายละเอียด
