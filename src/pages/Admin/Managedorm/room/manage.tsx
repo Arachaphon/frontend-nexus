@@ -25,15 +25,27 @@ interface Room {
   id: string;
   room_number: string;
   status: string;
-  current_rent_price: number;
 }
 
 interface LayoutContextType {
   setPageTitle: (title: string) => void;
 }
 
+interface Contract {
+  id: string
+  room_id: string
+  rent_price: number
+  check_out_date: string | null  
+}
+
+const statusMap: Record<string, string> = {
+  vacant: 'ว่าง',
+  occupied: 'มีผู้เช่า',
+  pending: 'รอเข้าอยู่'
+}
+
 export default function Manage() {
-  const { dormitoryId } = useParams();
+  const { dormitoryId} = useParams();
   const navigate = useNavigate(); // เรียกใช้งาน navigate สำหรับเปลี่ยนหน้า
   const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
   const [statsData, setStatsData] = useState({
@@ -44,6 +56,8 @@ export default function Manage() {
   });
   const [rooms, setRooms] = useState<Room[]>([]);
   const [dormitoryName, setDormitoryName] = useState<string>('');
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [contract, setContract] = useState<Contract[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const context = useOutletContext<LayoutContextType>();
   const setPageTitle = context ? context.setPageTitle : null;
@@ -68,10 +82,12 @@ export default function Manage() {
           'Content-Type': 'application/json'
         };
 
-        const [statsRes, roomsRes, dormRes] = await Promise.all([
+        const [statsRes, roomsRes, dormRes , tenantRes , contractRes] = await Promise.all([
           fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}/stats`, { method:'GET', headers }),
           fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {method:'GET', headers }),
-          fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {method:'GET', headers })
+          fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, {method:'GET', headers }),
+          fetch(`${API_BASE}/api/rentals/tenants/dormitories/${dormitoryId}`, { method: 'GET', headers }),
+          fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}`, { method: 'GET', headers }),
         ]);
 
         if (!statsRes.ok || !roomsRes.ok) {
@@ -101,6 +117,12 @@ export default function Manage() {
         if (dormRes.ok) {
           setDormitoryName(dormJson.name);
         }
+
+      const tenantData = await tenantRes.json();
+      const contractData = await contractRes.json();
+
+      setTenants(tenantData.data || []);
+      setContract(contractData.data) 
 
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -137,16 +159,6 @@ export default function Manage() {
       iconColor: 'text-green-600'
     },
     {
-      label: 'จองล่วงหน้า',
-      value: statsData.occupied,
-      unit: 'ห้อง',
-      icon: <Calendar className="w-5 h-5" />,
-      borderColor: 'border-orange-400',
-      textColor: 'text-orange-500',
-      iconBg: 'bg-orange-100',
-      iconColor: 'text-orange-500'
-    },
-    {
       label: 'ค้างชำระ',
       value: statsData.pending,
       unit: 'ห้อง',
@@ -178,11 +190,12 @@ export default function Manage() {
             </div>
             
             {/* Stats Cards Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div className="flex flex-wrap justify-center gap-5 mb-8">
               {stats.map((stat, index) => (
                 <div
                   key={index}
-                  className={`bg-white rounded-2xl border-2 ${stat.borderColor} p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow`}
+                  // เพิ่ม w-full md:w-[320px] เพื่อคุมขนาดการ์ดให้เท่ากันและสวยงาม
+                  className={`w-full md:w-[320px] bg-white rounded-2xl border-2 ${stat.borderColor} p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`${stat.iconBg} p-2.5 rounded-xl ${stat.iconColor}`}>
@@ -217,11 +230,10 @@ export default function Manage() {
                     <tr>
                       <th className="px-6 py-4 font-semibold text-center w-[100px]">ห้อง</th>
                       <th className="px-6 py-4 font-semibold text-center w-[120px]">สถานะ</th>
-                      <th className="px-6 py-4 font-semibold text-center">ลูกค้า</th>
+                      <th className="px-6 py-4 font-semibold text-center">ผู้เช่า</th>
                       <th className="px-6 py-4 font-semibold text-center">ประเภท</th>
                       <th className="px-6 py-4 font-semibold text-center">ค่าเช่า</th>
                       <th className="px-6 py-4 font-semibold text-center">แจ้งออก</th>
-                      <th className="px-6 py-4 font-semibold text-center">จองล่วงหน้า</th>
                       <th className="px-6 py-4 font-semibold text-right">ค้างชำระ</th>
                     </tr>
                   </thead>
@@ -241,24 +253,46 @@ export default function Manage() {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span className="bg-cyan-50 text-cyan-600 border border-cyan-100 px-3 py-1 rounded-full text-xs font-bold inline-block min-w-[60px]">
-                            {room.status === 'vacant' ? 'ว่าง' : 'มีผู้เช่า'}
+                            {statusMap[room.status] || '-'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-center text-gray-400">-</td>
-                        <td className="px-6 py-4 text-right">
-                          {/* สามารถเก็บ Link ไว้หรือเอาออกก็ได้ เพราะทั้งแถวคลิกได้แล้ว */}
+                        <td className="px-6 py-4 text-center text-gray-400">
+                          {
+                            (() => {
+                              const t = tenants.find(x => x.room_id === room.id)
+                              return t?.first_name && t?.last_name
+                                ? `${t.first_name} ${t.last_name}`
+                                : '-'
+                            })()
+                          }
+                        </td>
+                        <td className="px-6 py-4 text-center text-gray-400">รายเดือน</td>
+                        <td className="px-6 py-4 text-center text-gray-400">
+                          {
+                            (() => {
+                              const c = contract.find(x => x.room_id === room.id)
+                              return c?.rent_price ?? '-'
+                            })()
+                          }
+                        </td>
+                        <td className="px-6 py-4 text-center text-gray-400">
+                          {
+                            (() => {
+                              const c = contract.find(x => x.room_id === room.id)
+                              return c?.check_out_date ?? '-'
+                            })()
+                          }
+                        </td>
+                        
+                        <td className="px-6 py-4 text-right text-red-500">ค้างชำระ</td>
+                          
                           <Link 
                             to={`/manage/${dormitoryId}/room/${room.id}`}
                             className="text-gray-500 hover:text-emerald-600 underline text-xs font-medium transition-colors"
                             onClick={(e) => e.stopPropagation()} // ป้องกันไม่ให้ Event การคลิกซ้อนทับกัน
                           >
-                            ข้อมูล
-                          </Link>
-                        </td>
+                            
+                          </Link>                       
                       </tr>
                     ))}
                   </tbody>

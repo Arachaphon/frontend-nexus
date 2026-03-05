@@ -1,67 +1,142 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { useParams, Link } from 'react-router-dom';
-import { Home, ChevronRight, Waves, Flame, Phone } from 'lucide-react';
+import { Home, ChevronRight, Waves, Flame, Phone, X } from 'lucide-react'; 
 
 // Import Components (เช็ค Path ให้ตรงกับโครงสร้างของคุณด้วยนะครับ)
 import C_HomeMain from '../../../../components/C_homemain';
 import Footer from '../../../../components/Footerhomemain';
 import Sidebar from '../../../../components/Sidebar';
 
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
+
 export default function RoomInfo() {
-    const { dormitoryId,roomId } = useParams();
+    const { dormitoryId, roomId } = useParams();
     const [dormitoryName, setDormitoryName] = useState<string>('');
     const [roomNumber, setRoomNumber] = useState<string>('');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(true);
+    const [error, setError] = useState<string | null>(null); 
     const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+
+    // State สำหรับควบคุม Modal แจ้งย้ายออก
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [moveOutDate, setMoveOutDate] = useState('');
+    
+    // 🟢 State สำหรับเก็บวันที่ที่ "บันทึก" แล้ว เพื่อนำมาโชว์หน้า UI หลัก
+    const [savedMoveOutDate, setSavedMoveOutDate] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchStats = async () => {
             if (!dormitoryId) return;
             try {
-                setLoading(true)
-                setError(null)
+                setLoading(true);
+                setError(null);
                 const token = localStorage.getItem('token');
                 if (!token) {
                     console.error('Authentication token not found.');
                     return;
                 }
                 const headers = {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 };
 
                 const [dormRes, roomRes] = await Promise.all([
-                    fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,
-                    {method:'GET' , headers}),
-                    fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`,
-                    {method:'GET' , headers})
+                    fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { method: 'GET', headers }),
+                    fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { method: 'GET', headers })
                 ]);
 
                 if (!dormRes.ok || !roomRes.ok) {
-                    console.error('API request failed:', dormRes.status , roomRes.status);
+                    console.error('API request failed:', dormRes.status, roomRes.status);
                     return;
                 }
 
                 const dormData = await dormRes.json();
                 console.log("DORM RESPONSE:", dormData);
-                setDormitoryName(dormData.data.name)
+                setDormitoryName(dormData.data.name);
 
                 const roomData = await roomRes.json();
                 console.log("ROOM RESPONSE:", roomData);
-                setRoomNumber(roomData.data.room_number)
+                setRoomNumber(roomData.data.room_number);
             } catch (err) {
-                console.error('Unexpected error:', error);
+                console.error('Unexpected error:', err); 
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
         };
 
-        fetchStats()
-    }, [dormitoryId,roomId]);
+        fetchStats();
+    }, [dormitoryId, roomId]);
+
+    // ฟังก์ชันบันทึกการแจ้งย้ายออก
+    const handleSaveMoveOut = () => {
+        if (!moveOutDate) {
+            alert('กรุณาระบุวันที่แจ้งย้ายออก');
+            return;
+        }
+        console.log("วันที่แจ้งย้ายออก:", moveOutDate);
+        setSavedMoveOutDate(moveOutDate); // 🟢 บันทึกวันที่เพื่อนำไปแสดงผล
+        setIsModalOpen(false); // ปิด Modal
+    };
+
+    // 🟢 ฟังก์ชันแปลงวันที่รูปแบบ YYYY-MM-DD เป็น DD/MM/YYYY ตามรูปภาพ
+    const formatDisplayDate = (dateString: string) => {
+        if (!dateString) return '';
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    };
     
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden relative">
+      
+      {/* Modal (ป๊อปอัปแจ้งย้ายออก) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-xl w-[450px] max-w-[90%] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-800">แจ้งย้ายออก</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="px-6 py-8">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                วันที่แจ้งย้ายออก<span className="text-red-500">*</span>
+              </label>
+              <input 
+                type="date" 
+                value={moveOutDate}
+                onChange={(e) => setMoveOutDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white"
+              />
+            </div>
+            
+            {/* Footer */}
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="px-6 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                ปิด
+              </button>
+              <button 
+                onClick={handleSaveMoveOut}
+                className="px-6 py-2 text-sm font-medium text-white bg-[#75706b] rounded-md hover:bg-[#5a5652] transition-colors"
+              >
+                บันทึก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Sidebar อยู่คงที่ */}
       <Sidebar />
@@ -70,7 +145,7 @@ export default function RoomInfo() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <C_HomeMain title="หอพัก: A" />
+        <C_HomeMain title={`หอพัก: ${dormitoryName || 'A'}`} />
 
         {/* ส่วนเนื้อหาหลัก */}
         <div className="flex-1 overflow-y-auto">
@@ -83,42 +158,44 @@ export default function RoomInfo() {
                              <Home className="w-4 h-4" />
                              <span>ห้อง</span>
                          </Link>
+                         
                          <ChevronRight className="w-4 h-4 text-gray-400" />
-                         <Link to={`/manage/room/${roomId}`} className="hover:text-emerald-600">
-                             ข้อมูล ห้อง {roomId}
+                         
+                         <Link to={`/manage/${dormitoryId}/room/${roomId}/roominfo`} className="hover:text-emerald-600">
+                             ข้อมูล ห้อง {roomNumber || roomId}
                          </Link>
 
+                         <ChevronRight className="w-4 h-4 text-gray-400" />
+                         <span className="text-gray-800 font-medium">ข้อมูลสัญญา</span>
+
                      </div>
-                     {/* เส้นคั่น */}
                      <hr className="border-gray-300 w-full" />
                  </div>
-                {/* ------------------------------------------------------------- */}
 
                 {/* Grid แบ่ง 2 ฝั่ง ซ้าย-ขวา */}
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                     
-                    {/* ฝั่งซ้าย: ข้อมูลห้องพัก (แก้ไขเฉพาะส่วน Header นี้ให้ตรงปก) */}
+                    {/* ฝั่งซ้าย: ข้อมูลห้องพัก */}
                     <div className="xl:col-span-5 bg-white rounded-md shadow-sm border border-gray-200 p-6 flex flex-col h-full">
                         
-                        {/* Header ห้อง (ใส่ break-all เพื่อให้ ID ยาวๆ ปัดบรรทัดได้ ไม่พัง) */}
+                        {/* Header ห้อง */}
                         <div className="flex items-start sm:items-center gap-3 mb-4 flex-col sm:flex-row">
-                            <h2 className="text-2xl font-normal text-gray-800 break-all">ห้อง : {roomNumber}</h2>
+                            <h2 className="text-2xl font-normal text-gray-800 break-all">ห้อง : {roomNumber || roomId}</h2>
                             <span className="bg-[#ff9b50] text-white text-xs px-3 py-1 rounded-sm whitespace-nowrap mt-1 sm:mt-0">
                                 ไม่ว่าง
                             </span>
                         </div>
 
-                        {/* ย้ายเส้นคั่นมาไว้ตรงนี้ ตามรูปภาพ */}
                         <hr className="border-gray-300 w-full mb-2" />
 
-                        {/* ปุ่ม แก้ไข (จัดชิดขวา และอยู่ใต้เส้น) */}
+                        {/* ปุ่ม แก้ไข */}
                         <div className="flex justify-end mb-2">
-                            <Link to={`/manage/room/${roomId}/addcontract`} className="text-sm font-semibold text-gray-600 underline hover:text-gray-900">
+                            <Link to={`/manage/${dormitoryId}/room/${roomId}/addcontract`} className="text-sm font-semibold text-gray-600 underline hover:text-gray-900">
                                 แก้ไข
                             </Link>
                         </div>
 
-                        {/* ข้อมูลสัญญา (List) - ไม่ได้แตะต้อง */}
+                        {/* ข้อมูลสัญญา (List) */}
                         <div className="space-y-4 text-gray-700 mb-8 flex-grow">
                             <div className="border-b border-gray-100 pb-2">
                                 <span className="mr-2 font-medium">ประเภท :</span> รายเดือน
@@ -140,10 +217,10 @@ export default function RoomInfo() {
                             </div>
                         </div>
 
-                        {/* เลขมิเตอร์วันเข้าพัก - ไม่ได้แตะต้อง */}
+                        {/* เลขมิเตอร์วันเข้าพัก */}
                         <div className="mb-4 flex justify-between items-center mt-auto">
                             <h3 className="text-gray-800 font-medium">เลขมิเตอร์วันเข้าพัก</h3>
-                            <Link to={`/manage/room/${roomId}/addcontract3`} className="text-sm text-gray-600 underline hover:text-gray-900">
+                            <Link to={`/manage/${dormitoryId}/room/${roomId}/addcontract3/1`} className="text-sm text-gray-600 underline hover:text-gray-900">
                                 แก้ไข
                             </Link>
                         </div>
@@ -174,21 +251,42 @@ export default function RoomInfo() {
 
                         <hr className="border-gray-200 mb-6" />
 
-                        {/* แจ้งย้ายออก - ไม่ได้แตะต้อง */}
+                        {/* แจ้งย้ายออก */}
                         <div className="mb-2">
                             <h3 className="text-gray-800 font-medium mb-4">แจ้งย้ายออก</h3>
                             <div className="flex flex-col gap-4 items-center">
-                                <button className="w-32 py-2 text-sm text-gray-400 border border-gray-200 rounded-md bg-gray-50/50 cursor-not-allowed">
-                                    แจ้งย้ายออก
-                                </button>
-                                <button className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-6 rounded-md transition-colors w-full max-w-[200px]">
+                                
+                                {/* 🟢 เงื่อนไขสลับหน้าจอตามภาพ ถ้ามีวันที่แล้วให้แสดงวันที่ ถ้าไม่มีให้แสดงปุ่มเดิม */}
+                                {savedMoveOutDate ? (
+                                    <div className="flex flex-col items-center gap-3 mb-2">
+                                        <span className="text-[22px] font-normal text-black">
+                                            {formatDisplayDate(savedMoveOutDate)}
+                                        </span>
+                                        <button 
+                                          onClick={() => setIsModalOpen(true)}
+                                          className="px-6 py-2 text-sm text-gray-400 border border-gray-200 rounded-md bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                                        >
+                                            แก้ไขวันที่แจ้งย้ายออก
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button 
+                                      onClick={() => setIsModalOpen(true)}
+                                      className="w-32 py-2 text-sm text-gray-400 border border-gray-200 rounded-md bg-gray-50/50 hover:bg-gray-100 cursor-pointer transition-colors"
+                                    >
+                                        แจ้งย้ายออก
+                                    </button>
+                                )}
+                                <Link to = {`/manage/${dormitoryId}/room/${roomId}/roominfo/moveout`}
+            
+                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-6 rounded-md transition-colors w-full max-w-[200px]">
                                     ยกเลิกสัญญา / ย้ายออก
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
 
-                    {/* ฝั่งขวา: ข้อมูลผู้เช่า - ไม่ได้แตะต้องเลย */}
+                    {/* ฝั่งขวา: ข้อมูลผู้เช่า */}
                     <div className="xl:col-span-7">
                         <div className="bg-white rounded-md shadow-sm border-2  p-6 h-full flex flex-col relative">
                             
@@ -220,7 +318,7 @@ export default function RoomInfo() {
                                         0123456789
                                     </div>
                                     <div className="px-4 py-3 flex justify-end items-center">
-                                        <Link to="#" className="text-gray-600 underline hover:text-gray-900 text-xs">
+                                        <Link to={`/manage/${dormitoryId}/room/${roomId}/tenantinfo`} className="text-gray-600 underline hover:text-gray-900 text-xs">
                                             ข้อมูล
                                         </Link>
                                     </div>
@@ -230,9 +328,10 @@ export default function RoomInfo() {
 
                             {/* ปุ่มเพิ่ม */}
                             <div className="mt-auto flex justify-end">
-                                <button className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
+                                <Link to={`/manage/${dormitoryId}/room/${roomId}/addtenant`} className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
                                     เพิ่ม
-                                </button>
+                                </Link>
+
                             </div>
 
                         </div>

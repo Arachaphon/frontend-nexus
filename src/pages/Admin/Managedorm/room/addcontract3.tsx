@@ -97,7 +97,7 @@ export default function MeterReading() {
                 throw new Error(data.error || 'ไม่สามารถบันทึกข้อมูลได้');
             }
 
-            navigate(`/manage/room/${roomId}/roominfo`);
+            navigate(`/manage/${dormitoryId}/room/${roomId}`);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError (err.message);

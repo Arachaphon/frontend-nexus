@@ -42,9 +42,6 @@ const Sidebar = () => {
       path: '/billing',
       subMenu: [
         { label: 'บิลรายเดือน', path: '/billing/monthly' },
-        { label: 'บิลทั่วไป', path: '/billing/general' },
-        { label: 'บิลค้างชำระ', path: '/billing/pending' },
-        { label: 'บิลทั้งหมด', path: '/billing/all' },
       ]
     },
     { 
@@ -55,7 +52,6 @@ const Sidebar = () => {
       subMenu: [
         { label: 'ข้อมูลหอพัก', path: '/settings/info' },
         { label: 'บัญชีธนาคาร', path: '/settings/bank' },
-        { label: 'การคิดค่ามิเตอร์', path: '/settings/meter-config' },
         { label: 'ผังห้อง', path: '/settings/layout' },
         { label: 'ห้องว่าง', path: '/settings/available' },
         { label: 'ค่าห้อง', path: '/settings/room-rates' },
