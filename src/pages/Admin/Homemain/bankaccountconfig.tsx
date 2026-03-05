@@ -33,7 +33,7 @@ const BANK_OPTIONS = [
 
 const BankAccountConfig = () => {
   const navigate = useNavigate();
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const API_BASE = window.__ENV__?.API_BASE ;
   console.log("API_BASE inside component:", API_BASE);
   // --- States ---
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
