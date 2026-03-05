@@ -89,8 +89,12 @@ const Adddormitory: React.FC = () => {
 
             const result = await response.json();
 
+            if (response.status === 403) {
+                window.location.href = '/homemain'
+                return
+            }
             if (!response.ok || !result.success) {
-                throw new Error(result.message ||'ไม่สามารถบันทึกข้อมูลได้');
+                throw new Error(result.message || 'ไม่สามารถบันทึกข้อมูลได้')
             }
 
             if (result.dormitory_id) {

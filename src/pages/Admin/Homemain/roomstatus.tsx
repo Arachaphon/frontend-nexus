@@ -146,6 +146,11 @@ const RoomStatusSetup = () => {
                 })
             });
 
+            if (response.status === 403) {
+                window.location.href = '/homemain'
+                return
+            }
+
             if (!res.ok) {
                 const text = await res.text();
                 console.error("Backend error:", text);

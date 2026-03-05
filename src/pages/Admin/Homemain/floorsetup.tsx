@@ -94,7 +94,10 @@ const FloorSetup = () => {
           }))
         })
       });
-
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
 
       window.location.href = "/homemain/roomsetup"; 

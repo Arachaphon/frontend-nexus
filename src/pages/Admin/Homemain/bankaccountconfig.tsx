@@ -83,6 +83,7 @@ const BankAccountConfig = () => {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
       const dormData = await dormRes.json();
       if (dormData.payment_note) setPaymentNote(dormData.payment_note);
     } catch (err) {
@@ -134,6 +135,10 @@ const BankAccountConfig = () => {
         })
       });
 
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       if (!response.ok) {
         throw new Error("API failed");
       }
@@ -178,7 +183,10 @@ const BankAccountConfig = () => {
           payment_note: paymentNote
         })
       });
-
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       if (response.ok) {
         navigate('/homemain/floorsetup');
       }

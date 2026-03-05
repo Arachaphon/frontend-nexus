@@ -142,7 +142,10 @@ const RoomPriceSetup = () => {
           price: newPrice
         })
       });
-
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       const result = await response.json();
 
       if (result.success) {

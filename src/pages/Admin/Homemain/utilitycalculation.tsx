@@ -95,7 +95,10 @@ const UtilityCalculation = () => {
           }
         })
       });
-
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
       
       // ย้ายไปหน้าถัดไป (เช่น บัญชีธนาคาร)
