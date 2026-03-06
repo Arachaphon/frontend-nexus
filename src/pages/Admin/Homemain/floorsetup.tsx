@@ -80,7 +80,7 @@ const FloorSetup = () => {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
 
-      const response = await fetch(`${API_BASE}/api/floors/floor-setup`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -94,10 +94,12 @@ const FloorSetup = () => {
           }))
         })
       });
-
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
 
-      alert('บันทึกโครงสร้างอาคารสำเร็จ');
       window.location.href = "/homemain/roomsetup"; 
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);
@@ -109,7 +111,7 @@ const FloorSetup = () => {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
 
-      const response = await fetch(`${API_BASE}/api/floors/floor-setup`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
