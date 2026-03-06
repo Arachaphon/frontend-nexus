@@ -110,8 +110,14 @@ export default function RoomInfo() {
 
                 setDormitoryName(dormData.name);
                 setRoom(roomData.data);
-                setTenants(tenantData.data || []);
-                setContract(contractData.data[0] || null)
+                const filteredTenants = tenantData.data.filter(
+                    (t: any) => t.contract_id === contractId
+                );
+                setTenants(filteredTenants);
+                const selectedContract = contractData.data.find(
+                    (c: Contract) => c.id === contractId
+                );
+                setContract(selectedContract || null);
                 setMeters(meterData.data || []);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Unexpected error');
@@ -381,7 +387,7 @@ export default function RoomInfo() {
 
                             {/* ปุ่มเพิ่ม */}
                             <div className="mt-auto flex justify-end">
-                                <Link to={`/manage/${dormitoryId}/room/${roomId}/addtenant`} className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
+                                <Link to={`/manage/${dormitoryId}/room/${roomId}/addtenant/${contractId}`} className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-8 rounded-lg shadow-sm transition-colors text-sm">
                                     เพิ่ม
                                 </Link>
 

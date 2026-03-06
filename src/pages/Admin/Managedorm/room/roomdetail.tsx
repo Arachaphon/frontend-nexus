@@ -81,14 +81,16 @@ export default function RoomDetail() {
       setDormitoryName(dormData.data?.name || dormData.name || '');
       setRoom(roomData.data);
       setTenants(tenantData.data || []);
-      setContract(contractData.data) 
+      console.log("contractData", contractData)
+      console.log("contracts", contractData.data)
+      setContract(contractData.data || [])
 
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unexpected error');
     } finally {
       setLoading(false);
     }
-  }, [dormitoryId, roomId, contractId, API_BASE]);
+  }, [dormitoryId, roomId, API_BASE]);
 
   useEffect(() => {
     fetchRoomDetail();
@@ -186,7 +188,7 @@ export default function RoomDetail() {
                               </div>
                             </td>
                             <td className="px-4 py-4">
-                              {tenants?.filter(t => t.is_primary === 1).map(t => (
+                              {tenants?.filter(t => t.contract_id === con.id && t.is_primary === 1).map(t => (
                                 <div key={t.id}>
                                   <div className="text-gray-800 font-medium">{t.first_name} {t.last_name}</div>
                                   <div className="text-gray-400 flex items-center gap-1">
