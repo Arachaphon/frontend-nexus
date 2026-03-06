@@ -33,7 +33,8 @@ const BANK_OPTIONS = [
 
 const BankAccountConfig = () => {
   const navigate = useNavigate();
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const API_BASE = window.__ENV__?.API_BASE ;
+  console.log("API_BASE inside component:", API_BASE);
   // --- States ---
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [paymentNote, setPaymentNote] = useState('');
@@ -69,15 +70,20 @@ const BankAccountConfig = () => {
         alert('ไม่พบข้อมูลหอพัก กรุณากลับไปเริ่มสร้างใหม่');
         return;
       }
-      const bankRes = await fetch(`${API_BASE}/api/banks/list/${dormitoryId}`,{
+      const bankRes = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}`,{
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const bankData = await bankRes.json();
-      if (Array.isArray(bankData)) setBankAccounts(bankData);
+      if (bankData.success) {
+        setBankAccounts(bankData.data);
+      }
 
-      const dormRes = await fetch(`${API_BASE}/api/dormitories/info/${dormitoryId}`,{
+      const dormRes = await fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,{
+        method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
       const dormData = await dormRes.json();
       if (dormData.payment_note) setPaymentNote(dormData.payment_note);
     } catch (err) {
@@ -114,7 +120,7 @@ const BankAccountConfig = () => {
     const bankInfo = BANK_OPTIONS.find(b => b.value === selectedBank);
     
     try {
-      const response = await fetch(`${API_BASE}/api/banks/add`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,6 +134,14 @@ const BankAccountConfig = () => {
           account_name: accountName
         })
       });
+
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
+      if (!response.ok) {
+        throw new Error("API failed");
+      }
 
       const data = await response.json();
         if (data.success) {
@@ -147,6 +161,7 @@ const BankAccountConfig = () => {
   };
 
   const handleNextStep = async () => {
+    console.log("CLICKED NEXT STEP");
     if (bankAccounts.length === 0) {
       alert("กรุณาเพิ่มบัญชีธนาคารอย่างน้อย 1 รายการ");
       return;
@@ -157,7 +172,7 @@ const BankAccountConfig = () => {
       const token = localStorage.getItem('token');
       const dormitoryId = localStorage.getItem('dormitoryId');
 
-      const response = await fetch(`${API_BASE}/api/dormitories/update-payment-note`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/banks/payment-note/${dormitoryId}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -168,7 +183,10 @@ const BankAccountConfig = () => {
           payment_note: paymentNote
         })
       });
-
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       if (response.ok) {
         navigate('/homemain/floorsetup');
       }
@@ -185,7 +203,8 @@ const BankAccountConfig = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/api/banks/delete/${id}`, {
+      const dormitoryId = localStorage.getItem('dormitoryId');
+      const res = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -366,7 +385,8 @@ const BankAccountConfig = () => {
               กลับ
             </button>
           </a>
-          <button 
+          <button
+            type="button" 
             onClick={handleNextStep}
             disabled={bankAccounts.length === 0 || loading}
             className={`px-10 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all ${bankAccounts.length > 0 

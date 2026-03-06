@@ -75,7 +75,7 @@ const UtilityCalculation = () => {
 
       const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 
-      const response = await fetch(`${API_BASE}/api/utilities/save-settings`, {
+      const response = await fetch(`${API_BASE}/api/dormitories/utilities/${dormitoryId}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -95,10 +95,12 @@ const UtilityCalculation = () => {
           }
         })
       });
-
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
       if (!response.ok) throw new Error('ไม่สามารถบันทึกข้อมูลได้');
       
-      alert('บันทึกการตั้งค่าสำเร็จ');
       // ย้ายไปหน้าถัดไป (เช่น บัญชีธนาคาร)
       window.location.href = "/homemain/bankaccountconfig"; 
     } catch (err: unknown) {

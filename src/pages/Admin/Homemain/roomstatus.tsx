@@ -8,7 +8,7 @@ const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
 type RoomStatus = 'vacant' | 'occupied';
 
 interface Room {
-  id: string; // ปรับให้ตรงกับ Database Schema ที่เป็น TEXT (TEXT PRIMARY KEY)
+  id: string; 
   number: string;
   status: RoomStatus;
   isSelected: boolean;
@@ -39,12 +39,35 @@ const RoomStatusSetup = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (!dormitoryId) return;
+
+            const token = localStorage.getItem("token");
+            if (!token) {
+                console.error("No token found");
+                return;
+            }
+
             setLoading(true);
             try {
                 const [fRes, rRes] = await Promise.all([
-                    fetch(`${API_BASE}/api/floors/get-floors/${dormitoryId}`),
-                    fetch(`${API_BASE}/api/rooms/get-rooms/${dormitoryId}`)
+                    fetch(`${API_BASE}/api/dormitories/floors/${dormitoryId}`, {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }),
+                    fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    })
                 ]);
+
+                if (!fRes.ok || !rRes.ok) {
+                    console.error("API ERROR", fRes.status, rRes.status);
+                    return;
+                }
+
                 const floorResult = await fRes.json();
                 const roomResult = await rRes.json();
 
@@ -61,18 +84,20 @@ const RoomStatusSetup = () => {
                                 isSelected: false
                             }))
                     }));
+
                     setFloors(mapped);
                 }
             } catch (err) {
-                console.error('Fetch Error:', err);
+                console.error("Fetch crash:", err);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchData();
     }, [dormitoryId]);
 
-    // --- เลือกห้อง (รวมเหลืออันเดียว) ---
+    // --- เลือกห้อง ---
     const toggleRoomSelection = (floorId: string, roomId: string) => {
         setFloors(prev => prev.map(f => f.id === floorId ? {
             ...f,
@@ -88,41 +113,84 @@ const RoomStatusSetup = () => {
         } : f));
     };
 
-    // --- อัปเดตสถานะห้องไปยัง Backend ---
+    // --- อัปเดตสถานะห้อง ---
     const handleSetStatus = async (newStatus: RoomStatus) => {
-        const selectedRoomId = floors.flatMap(f => f.rooms.filter(r => r.isSelected).map(r => r.id));
-        if (selectedRoomId.length === 0) return alert("กรุณาเลือกห้องอย่างน้อย 1 ห้อง");
+        const selectedRoomIds = floors
+            .flatMap(f => f.rooms)
+            .filter(r => r.isSelected)
+            .map(r => r.id);
+
+        if (selectedRoomIds.length === 0) {
+            alert("กรุณาเลือกห้องอย่างน้อย 1 ห้อง");
+            return;
+        }
 
         setLoading(true);
+
         try {
-            const res = await fetch(`${API_BASE}/api/rooms/update-status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId: selectedRoomId, status: newStatus, dormitoryId })
-            });
-            const result = await res.json();
-            if (result.success) {
-                setFloors(prev => prev.map(f => ({
-                    ...f,
-                    rooms: f.rooms.map(r => r.isSelected ? { ...r, status: newStatus, isSelected: false } : r)
-                })));
-            } else {
-                alert("เกิดข้อผิดพลาด: " + result.message);
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("ไม่พบ token");
+                return;
             }
+
+            const res = await fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    roomIds: selectedRoomIds,
+                    status: newStatus
+                })
+            });
+
+            if (response.status === 403) {
+                window.location.href = '/homemain'
+                return
+            }
+
+            if (!res.ok) {
+                const text = await res.text();
+                console.error("Backend error:", text);
+                alert("เกิดข้อผิดพลาดจาก server");
+                return;
+            }
+
+            const result = await res.json();
+
+            if (result.success) {
+                // อัปเดต UI ทันที
+                setFloors(prev =>
+                    prev.map(f => ({
+                        ...f,
+                        rooms: f.rooms.map(r =>
+                            r.isSelected
+                                ? { ...r, status: newStatus, isSelected: false }
+                                : r
+                        )
+                    }))
+                );
+            } else {
+                alert(result.message || "เกิดข้อผิดพลาด");
+            }
+
         } catch (err) {
+            console.error("PATCH crash:", err);
             alert("ไม่สามารถบันทึกข้อมูลได้");
         } finally {
             setLoading(false);
         }
     };
-
     const getSelectedCount = () => floors.reduce((acc, f) => acc + f.rooms.filter(r => r.isSelected).length, 0);
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#f8fcf8] relative">
+        <div className="flex flex-col min-h-screen bg-[#f8fcf8]">
             <C_HomeMain />
 
-            <div className="flex-grow w-full max-w-6xl mx-auto px-4 py-10 flex flex-col items-center pb-32">
+            {/* Main Content พื้นที่ยืดขยายได้ */}
+            <div className="flex-grow w-full max-w-6xl mx-auto px-4 py-10 flex flex-col items-center">
                 <h1 className="text-2xl font-bold text-[#0e4b3a] mb-10 text-center">ตั้งค่าหอพัก</h1>
 
                 {/* --- Progress Bar --- */}
@@ -131,7 +199,6 @@ const RoomStatusSetup = () => {
                         {steps.map((step, index) => {
                             const isCompleted = step.id < 6; 
                             const isActive = step.id === 6;
-
                             let circleClass = "bg-[#e5e7eb] border-gray-200 text-gray-500 ring-4 ring-gray-200";
                             let textClass = "text-gray-400";
 
@@ -162,26 +229,16 @@ const RoomStatusSetup = () => {
                     </div>
                 </div>
 
-                {/* --- MAIN CONTENT: Room Status Setup --- */}
-                <div className="w-full max-w-5xl space-y-6">
+                {/* --- ROOM LIST --- */}
+                <div className="w-full max-w-5xl space-y-6 mb-10">
                     {floors.map((floor) => (
                         <div key={floor.id} className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] p-6">
                             <div className="flex flex-col md:flex-row gap-8">
                                 <div className="w-full md:w-48 flex flex-col gap-4 md:border-r border-gray-200 md:pr-8 pt-2">
                                     <span className="text-xl font-medium text-gray-800">ชั้นที่ {floor.floorNumber}</span>
                                     <div className="flex flex-col gap-3">
-                                        <button 
-                                            onClick={() => handleSelectFloor(floor.id, true)}
-                                            className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-sm py-2 px-4 rounded-lg transition-colors"
-                                        >
-                                            เลือกทั้งชั้น
-                                        </button>
-                                        <button 
-                                            onClick={() => handleSelectFloor(floor.id, false)}
-                                            className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-sm py-2 px-4 rounded-lg transition-colors"
-                                        >
-                                            ยกเลิกเลือกทั้งชั้น
-                                        </button>
+                                        <button onClick={() => handleSelectFloor(floor.id, true)} className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-sm py-2 px-4 rounded-lg transition-colors">เลือกทั้งชั้น</button>
+                                        <button onClick={() => handleSelectFloor(floor.id, false)} className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-sm py-2 px-4 rounded-lg transition-colors">ยกเลิกเลือกทั้งชั้น</button>
                                     </div>
                                 </div>
 
@@ -191,18 +248,10 @@ const RoomStatusSetup = () => {
                                             <div 
                                                 key={room.id}
                                                 onClick={() => toggleRoomSelection(floor.id, room.id)}
-                                                className={`
-                                                    cursor-pointer w-40 h-24 p-3 rounded-lg border flex flex-col justify-center items-center gap-2 transition-all duration-200 select-none
-                                                    ${room.isSelected ? 'border-[#0e4b3a] bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300'}
-                                                    ${room.status === 'occupied' ? 'opacity-80' : ''}
-                                                `}  
+                                                className={`cursor-pointer w-40 h-24 p-3 rounded-lg border flex flex-col justify-center items-center gap-2 transition-all duration-200 select-none ${room.isSelected ? 'border-[#0e4b3a] bg-green-50 shadow-sm ring-1 ring-[#0e4b3a]' : 'border-gray-200 bg-white hover:border-gray-300'} ${room.status === 'occupied' ? 'opacity-80' : ''}`}  
                                             >
-                                                <div className="text-center font-medium text-gray-700 text-lg">
-                                                    ห้อง {room.number}
-                                                </div>
-                                                <div className={`text-sm font-medium ${room.status === 'vacant' ? 'text-emerald-500' : 'text-red-500'}`}>
-                                                    {room.status === 'vacant' ? 'ว่าง' : 'ไม่ว่าง'}
-                                                </div>
+                                                <div className="text-center font-medium text-gray-700 text-lg">ห้อง {room.number}</div>
+                                                <div className={`text-sm font-medium ${room.status === 'vacant' ? 'text-emerald-500' : 'text-red-500'}`}>{room.status === 'vacant' ? 'ว่าง' : 'ไม่ว่าง'}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -212,39 +261,26 @@ const RoomStatusSetup = () => {
                     ))}
                 </div>
 
-                {/* Floating Next Button */}
-                <div className="w-full max-w-5xl flex justify-between mt-8">
-                    <button onClick={() => navigate('/homemain/roomprice')} className="text-gray-500 hover:text-gray-700">กลับ</button>
-                    <button onClick={() => navigate('/homemain/homefinish')} className="bg-[#0e4b3a] text-white px-8 py-2.5 rounded-lg">ถัดไป</button>
+                {/* Navigation Buttons */}
+                <div className="w-full max-w-5xl flex justify-between mt-4 mb-10">
+                    <button onClick={() => navigate('/homemain/roomprice')} className="px-6 py-2.5 text-gray-500 hover:text-gray-700 font-medium">กลับ</button>
+                    <button onClick={() => navigate('/homemain/homefinish')} className="bg-[#78716c] hover:bg-[#5f5955] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium text-lg">ถัดไป</button>
                 </div>
             </div>
 
-            {/* --- Sticky Bottom Bar --- */}
-            <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 py-4 px-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
+            {/* --- STICKY ACTION BAR (จุดที่แก้) --- */}
+            <div className="sticky bottom-0 w-full bg-white border-t border-gray-200 py-4 px-6 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40">
                 <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6">
-                    <span className="text-lg text-gray-800 font-medium">
-                        เลือก {getSelectedCount()} ห้อง
-                    </span>
+                    <span className="text-lg text-gray-800 font-medium">เลือก {getSelectedCount()} ห้อง</span>
                     <div className="flex gap-4">
-                        <button 
-                            onClick={() => handleSetStatus('vacant')}
-                            className="bg-[#78716c] hover:bg-[#655f5b] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium text-lg"
-                        >
-                            ว่าง
-                        </button>
-                        <button 
-                            onClick={() => handleSetStatus('occupied')}
-                            className="bg-[#78716c] hover:bg-[#655f5b] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium text-lg opacity-90"
-                        >
-                            ไม่ว่าง
-                        </button>
+                        <button onClick={() => handleSetStatus('vacant')} className="bg-[#78716c] hover:bg-[#655f5b] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium text-lg">ว่าง</button>
+                        <button onClick={() => handleSetStatus('occupied')} className="bg-[#78716c] hover:bg-[#655f5b] text-white px-8 py-2.5 rounded-lg shadow-sm transition-colors font-medium text-lg">ไม่ว่าง</button>
                     </div>
                 </div>
             </div>
 
-            <div className="z-50 relative">
-                <Footer />
-            </div>
+            {/* Footer จะต่อท้าย Bar เสมอ ไม่ซ้อนกัน */}
+            <Footer />
         </div>
     );
 }

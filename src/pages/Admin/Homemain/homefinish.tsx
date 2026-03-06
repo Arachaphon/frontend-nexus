@@ -5,7 +5,6 @@ import C_HomeMain from '../../../components/C_homemain';
 import Footer from '../../../components/Footerhomemain';
 
 const HomeFinish = () => {
-  const dormitoryName = localStorage.getItem('dormitoryName') || 'หอพักของคุณ';
   const navigate = useNavigate();
 
   useEffect(() => {

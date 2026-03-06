@@ -64,6 +64,7 @@ const Adddormitory: React.FC = () => {
     if (formData.due_date === '') newErrors.due_date = 'จำเป็นต้องระบุวันสุดท้ายของการชำระเงิน';
     if (formData.fine_per_day === '') newErrors.fine_per_day = 'จำเป็นต้องระบุค่าปรับ';
 
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -71,9 +72,9 @@ const Adddormitory: React.FC = () => {
         setLoading(true);
         try{
             const token = localStorage.getItem('token');
-            const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+            const API_BASE = window.__ENV__?.API_BASE ;
 
-            const response = await fetch(`${API_BASE}/api/dormitories/add`, {
+            const response = await fetch(`${API_BASE}/api/dormitories/main`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -88,8 +89,12 @@ const Adddormitory: React.FC = () => {
 
             const result = await response.json();
 
+            if (response.status === 403) {
+                window.location.href = '/homemain'
+                return
+            }
             if (!response.ok || !result.success) {
-                throw new Error(result.message ||'ไม่สามารถบันทึกข้อมูลได้');
+                throw new Error(result.message || 'ไม่สามารถบันทึกข้อมูลได้')
             }
 
             if (result.dormitory_id) {
@@ -201,7 +206,7 @@ const Adddormitory: React.FC = () => {
                             className="flex-grow px-4 focus:outline-none h-full"
                         />
                     </div>
-                    {errors.dueDate && <span className="text-red-500 text-xs mt-1">{errors.due_date}</span>}
+                    {errors.due_date && <span className="text-red-500 text-xs mt-1">{errors.due_date}</span>}
                 </div>
 
                 <div className="flex flex-col">
@@ -225,7 +230,12 @@ const Adddormitory: React.FC = () => {
 
         <div className="w-full border-b border-[#8daaa2] mt-4 mb-8 md:mx-12 opacity-50"></div>
 
-        <div className="w-full flex justify-end px-4 md:px-12">
+        <div className="w-full max-w-5xl flex justify-between mt-8">
+            <a href="/homemain">
+                <button className="px-6 py-2.5 text-gray-500 hover:text-gray-700 font-medium text-sm transition-colors flex items-center gap-2">
+                กลับ
+                </button>
+            </a>
             <button 
                 onClick={handleSubmit}
                 disabled={loading}
