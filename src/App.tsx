@@ -70,7 +70,7 @@ function App() {
       <Route path="/manage/:dormitoryId/room/:roomId/addcontract" element={<AddContract />} />
       <Route path="/manage/:dormitoryId/room/:roomId/addcontract2/:contractId" element={<AdvanceRent />} />
       <Route path="/manage/:dormitoryId/room/:roomId/addcontract3/:contractId" element={<MeterReading />} />  
-      <Route path="/manage/:dormitoryId/room/:roomId/roominfo" element={<RoomInfo />} /> 
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId" element={<RoomInfo />} /> 
       <Route path="/manage/:dormitoryId/room/:roomId/addtenant" element={<AddTenant />} />
       <Route path="/manage/:dormitoryId/room/:roomId/tenantinfo" element={<Tenantinfo />} />
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveout" element={<MoveOut />} />

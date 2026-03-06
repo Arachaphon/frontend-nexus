@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link} from 'react-router-dom';
 import { Home, ChevronRight, Calendar, Phone, LayoutGrid } from 'lucide-react';
 import C_HomeMain from '../../../../components/C_homemain';
 import Footer from '../../../../components/Footerhomemain';
@@ -35,21 +35,19 @@ interface Contract {
   rent_price: number;
   check_in_date: string;
   check_out_date: string | null;
-  tenants: Tenant[];
 }
 
 export default function RoomDetail() {
-  const { dormitoryId, roomId } = useParams();
-  const navigate = useNavigate();
+  const { dormitoryId, roomId, contractId } = useParams();
 
   const [dormitoryName, setDormitoryName] = useState<string>('');
   const [room, setRoom] = useState<Room | null>(null); 
-  const [tenants, setTenants] = useState<any[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [contract, setContract] = useState<Contract[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const API_BASE = window.__ENV__?.API_BASE ;
 
   const fetchRoomDetail = useCallback(async () => {
     if (!dormitoryId || !roomId) return;
@@ -90,7 +88,7 @@ export default function RoomDetail() {
     } finally {
       setLoading(false);
     }
-  }, [dormitoryId, roomId, API_BASE]);
+  }, [dormitoryId, roomId, contractId, API_BASE]);
 
   useEffect(() => {
     fetchRoomDetail();
@@ -127,7 +125,7 @@ export default function RoomDetail() {
           <div className="flex items-center gap-4 mb-8">
             <h1 className="text-2xl font-bold text-gray-700">ห้อง : {room?.room_number}</h1>
             <span className="bg-cyan-50 text-cyan-600 border border-cyan-100 px-3 py-1 rounded-md text-sm font-bold shadow-sm">
-              {room?.status === 'vacant' ? 'ว่าง' : room?.status === 'occupied' ? 'มีผู้เช่า' : '-'}
+              {room?.status === 'vacant' ? 'ว่าง' : room?.status === 'occupied' ? 'ไม่ว่าง' : '-'}
             </span>
           </div>
 
@@ -188,7 +186,7 @@ export default function RoomDetail() {
                               </div>
                             </td>
                             <td className="px-4 py-4">
-                              {con.tenants?.filter(t => t.is_primary === 1).map(t => (
+                              {tenants?.filter(t => t.is_primary === 1).map(t => (
                                 <div key={t.id}>
                                   <div className="text-gray-800 font-medium">{t.first_name} {t.last_name}</div>
                                   <div className="text-gray-400 flex items-center gap-1">
@@ -198,8 +196,7 @@ export default function RoomDetail() {
                               ))}
                             </td>
                             <td className="px-4 py-4 text-right">
-                              <Link 
-                                to={`/manage/${dormitoryId}/room/${roomId}/roominfo`}
+                              <Link to={`/manage/${dormitoryId}/room/${roomId}/roominfo/${con.id}`}
                                 className="text-gray-500 underline hover:text-emerald-600 font-medium"
                               >
                                 รายละเอียด

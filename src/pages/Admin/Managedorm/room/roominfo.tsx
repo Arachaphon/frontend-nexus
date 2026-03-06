@@ -21,6 +21,29 @@ interface Room {
   status: string;
 }
 
+interface Tenant {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+}
+
+interface Contract {
+  id: string;
+  room_id: string;
+  check_in_date: string;
+  check_out_date: string | null;
+  rent_price: number;
+  security_deposit: number;
+  booking_fee: number;
+}
+
+interface Meter {
+  id: string;
+  water_unit_current: number;
+  electric_unit_current: number;
+}
+
 const statusMap: Record<string, string> = {
   vacant: 'ว่าง',
   occupied: 'ไม่ว่าง'
@@ -28,14 +51,15 @@ const statusMap: Record<string, string> = {
 
 
 export default function RoomInfo() {
-    const { dormitoryId, roomId } = useParams();
+    const { dormitoryId, roomId, contractId } = useParams();
     const [dormitoryName, setDormitoryName] = useState<string>('');
     const [room, setRoom] = useState<Room | null>(null);
     const [tenants, setTenants] = useState<Tenant[]>([]);
-    const [contract, setContract] = useState<Contract[]>([]); 
+    const [contract, setContract] = useState<Contract | null>(null)
+    const [meters, setMeters] = useState<Meter | null>(null)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null); 
-    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+    const API_BASE = window.__ENV__?.API_BASE ;
 
     // State สำหรับควบคุม Modal แจ้งย้ายออก
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,8 +69,8 @@ export default function RoomInfo() {
     const [savedMoveOutDate, setSavedMoveOutDate] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchStats = async () => {
-            if (!dormitoryId) return;
+        const fetchInfo = async () => {
+            if (!dormitoryId || !roomId || !contractId) return;
             try {
                 setLoading(true);
                 setError(null);
@@ -60,28 +84,35 @@ export default function RoomInfo() {
                     'Content-Type': 'application/json'
                 };
 
-                const [dormRes, roomRes, tenantRes , contractRes] = await Promise.all([
+                const [dormRes, roomRes, tenantRes , contractRes, meterRes] = await Promise.all([
                     fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { method: 'GET', headers }),
                     fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { method: 'GET', headers }),
-                    fetch(`${API_BASE}/api/rentals/tenants/dormitories/${dormitoryId}`, { method: 'GET', headers }),
-                    fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}`, { method: 'GET', headers }),
+                    fetch(`${API_BASE}/api/rentals/tenants/dormitories/${dormitoryId}/rooms/${roomId}`, { method: 'GET', headers }),
+                    fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}/rooms/${roomId}`, { method: 'GET', headers }),
+                    fetch(`${API_BASE}/api/meters/${dormitoryId}/contracts/${contractId}`, { method: 'GET', headers }),
                 ]);
 
-                if (dormRes.status === 403 || roomRes.status === 403) {
+                if (dormRes.status === 403 || roomRes.status === 403 || tenantRes.status === 403 || contractRes.status === 403 || meterRes.status === 403 ) {
                     window.location.href = '/homemain'
                     return
                 }
 
-                if (!dormRes.ok || !roomRes.ok) {
-                    console.error('API request failed:', dormRes.status, roomRes.status);
+                if (!dormRes.ok || !roomRes.ok || !tenantRes.ok || !contractRes.ok ) {
+                    console.error('API request failed:', dormRes.status, roomRes.status, tenantRes.status, contractRes.status, meterRes.status);
                     return;
                 }
 
                 const dormData = await dormRes.json();
-                setDormitoryName(dormData.name);
-
                 const roomData = await roomRes.json();
+                const tenantData = await tenantRes.json();
+                const contractData = await contractRes.json();
+                const meterData = await meterRes.json();
+
+                setDormitoryName(dormData.name);
                 setRoom(roomData.data);
+                setTenants(tenantData.data || []);
+                setContract(contractData.data[0] || null)
+                setMeters(meterData.data || []);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Unexpected error');
             } finally {
@@ -89,8 +120,8 @@ export default function RoomInfo() {
             }
         };
 
-        fetchStats();
-    }, [dormitoryId, roomId]);
+        fetchInfo();
+    }, [dormitoryId, roomId, contractId]);
 
     // ฟังก์ชันบันทึกการแจ้งย้ายออก
     const handleSaveMoveOut = () => {
@@ -220,19 +251,19 @@ export default function RoomInfo() {
                                 <span className="mr-2 font-medium">ประเภท :</span> รายเดือน
                             </div>
                             <div className="border-b border-gray-100 pb-2">
-                                <span className="mr-2 font-medium">เริ่มต้น :</span> 1010-10-10
+                                <span className="mr-2 font-medium">เริ่มต้น :</span> {contract?.check_in_date}
                             </div>
                             <div className="border-b border-gray-100 pb-2">
-                                <span className="mr-2 font-medium">สิ้นสุด :</span> 1011-10-10
+                                <span className="mr-2 font-medium">สิ้นสุด :</span> {contract?.check_out_date}
                             </div>
                             <div className="border-b border-gray-100 pb-2">
-                                <span className="mr-2 font-medium">ค่าห้อง :</span> 10
+                                <span className="mr-2 font-medium">ค่าห้อง :</span> {contract?.rent_price}
                             </div>
                             <div className="border-b border-gray-100 pb-2">
-                                <span className="mr-2 font-medium">เงินประกัน :</span> 10
+                                <span className="mr-2 font-medium">เงินประกัน :</span> {contract?.security_deposit}
                             </div>
                             <div className="border-b border-gray-100 pb-2">
-                                <span className="mr-2 font-medium">เงินล่วงหน้า :</span> 10
+                                <span className="mr-2 font-medium">เงินล่วงหน้า :</span> {contract?.booking_fee}
                             </div>
                         </div>
 
@@ -250,7 +281,7 @@ export default function RoomInfo() {
                                 <div className="flex w-full justify-between items-center px-2">
                                     <Waves className="w-10 h-10 text-blue-500" strokeWidth={2.5} />
                                     <div className="text-center">
-                                        <div className="text-xl font-semibold text-gray-800">9</div>
+                                        <div className="text-xl font-semibold text-gray-800">{meters?.water_unit_current}</div>
                                         <div className="text-sm text-gray-500">ค่าน้ำ</div>
                                     </div>
                                 </div>
@@ -260,7 +291,7 @@ export default function RoomInfo() {
                                  <div className="flex w-full justify-between items-center px-2">
                                     <Flame className="w-10 h-10 text-orange-500" fill="currentColor" />
                                     <div className="text-center">
-                                        <div className="text-xl font-semibold text-gray-800">9</div>
+                                        <div className="text-xl font-semibold text-gray-800">{meters?.electric_unit_current}</div>
                                         <div className="text-sm text-gray-500">ค่าไฟ</div>
                                     </div>
                                     
@@ -328,20 +359,23 @@ export default function RoomInfo() {
                                     <div className="px-4 py-2 font-medium text-right"></div>
                                 </div>
 
-                                {/* ส่วน Body (แถวข้อมูลผู้เช่า) */}
-                                <div className="grid grid-cols-3 bg-white hover:bg-gray-50 border-b border-gray-200 last:border-none transition-colors">
-                                    <div className="px-4 py-3 text-gray-800 flex items-center">
-                                        นาย ก
-                                    </div>
-                                    <div className="px-4 py-3 text-gray-800 flex justify-start items-center">
-                                        0123456789
-                                    </div>
-                                    <div className="px-4 py-3 flex justify-end items-center">
-                                        <Link to={`/manage/${dormitoryId}/room/${roomId}/tenantinfo`} className="text-gray-600 underline hover:text-gray-900 text-xs">
+                                {tenants.map((tenant) => (
+                                    <div key={tenant.id} className="grid grid-cols-3 bg-white border-b border-gray-200">
+                                        <div className="px-4 py-3">
+                                            {tenant.first_name} {tenant.last_name}
+                                        </div>
+
+                                        <div className="px-4 py-3">
+                                            {tenant.phone_number}
+                                        </div>
+
+                                        <div className="px-4 py-3 text-right">
+                                            <Link to={`/manage/${dormitoryId}/room/${roomId}/tenantinfo`}>
                                             ข้อมูล
-                                        </Link>
+                                            </Link>
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
 
                             </div>
 

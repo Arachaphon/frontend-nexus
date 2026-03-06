@@ -17,7 +17,7 @@ export default function MeterReading() {
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
-    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+    const API_BASE = window.__ENV__?.API_BASE ;
 
     // State สำหรับเก็บข้อมูลเลขมิเตอร์
     const [waterMeter, setWaterMeter] = useState('');
@@ -77,7 +77,7 @@ export default function MeterReading() {
             const token = localStorage.getItem('token');
             if (!token) throw new Error('Authentication token not found');
 
-            const res = await fetch(`${API_BASE}/api/meters`, {
+            const res = await fetch(`${API_BASE}/api/meters/${dormitoryId}`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,

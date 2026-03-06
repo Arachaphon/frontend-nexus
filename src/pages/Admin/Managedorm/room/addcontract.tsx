@@ -130,7 +130,7 @@ export default function AddContract() {
         };
 
         const contractRes = await fetch(
-            `${API_BASE}/api/rentals/contracts` , {
+            `${API_BASE}/api/rentals/contracts/${dormitoryId}` , {
             method: 'POST',
             headers,
             body: JSON.stringify({
