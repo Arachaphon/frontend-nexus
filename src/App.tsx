@@ -72,7 +72,7 @@ function App() {
       <Route path="/manage/:dormitoryId/room/:roomId/addcontract3/:contractId" element={<MeterReading />} />  
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId" element={<RoomInfo />} /> 
       <Route path="/manage/:dormitoryId/room/:roomId/addtenant/:contractId" element={<AddTenant />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/tenantinfo" element={<Tenantinfo />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/tenant/:tenantId" element={<Tenantinfo />}/>
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveout" element={<MoveOut />} />
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveoutdetail" element={<MoveOutDetail />} />
     </Routes>

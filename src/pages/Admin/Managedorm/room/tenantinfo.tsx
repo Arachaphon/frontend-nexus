@@ -15,26 +15,27 @@ declare global {
   }
 }
 
+interface Tenant {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  id_card_or_passport: string; 
+  address: string;                               
+  emergency_contact_name: string;
+  emergency_contact_relation: string;            
+  emergency_contact_phone: string; 
+  note: string; 
+}
+
 export default function Tenantinfo() {
-  const { dormitoryId, roomId } = useParams();
+  const { dormitoryId, roomId, tenantId } = useParams();
   
   // 🟢 เพิ่ม State สำหรับเก็บชื่อหอพักและเลขห้อง
   const [dormitoryName, setDormitoryName] = useState<string>('');
   const [roomNumber, setRoomNumber] = useState<string>('');
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const API_BASE = window.__ENV__?.API_BASE ;
 
-  // State สำหรับเก็บข้อมูลฟอร์ม
-  const [formData, setFormData] = useState({
-    firstName: 'นาย ก',
-    lastName: 'ข',
-    phone: '0123456789',
-    idCard: '1561561561561',
-    address: 'ที่อยู่ จังหวัด หนองปลาปู ตำบลปลาช่อน อำเภอกบ หมู่ที่ 99 บ้านเลขที่ 99',
-    emergencyName: '',
-    emergencyRelation: '',
-    emergencyPhone: '',
-    note: ''
-  });
 
   // 🟢 เพิ่ม useEffect ดึงข้อมูลหอพักเพื่อไม่ให้หน้าจอขาว
   useEffect(() => {
@@ -50,13 +51,18 @@ export default function Tenantinfo() {
             };
 
             const [dormRes, roomRes] = await Promise.all([
-                fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { method: 'GET', headers }),
-                fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { method: 'GET', headers })
+              fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { method: 'GET', headers }),
+              fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { method: 'GET', headers }),
             ]);
+
+            if (dormRes.status === 403 || roomRes.status === 403) {
+              window.location.href = '/homemain'
+              return
+            }
 
             if (dormRes.ok) {
                 const dormData = await dormRes.json();
-                setDormitoryName(dormData.data.name);
+                setDormitoryName(dormData.name);
             }
             if (roomRes.ok) {
                 const roomData = await roomRes.json();
@@ -68,6 +74,57 @@ export default function Tenantinfo() {
     };
     fetchStats();
   }, [dormitoryId, roomId]);
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    idCard: '',
+    address: '',
+    emergencyName: '',
+    emergencyRelation: '',
+    emergencyPhone: '',
+    note: ''
+  });
+
+  useEffect(() => {
+
+    const fetchTenant = async () => {
+
+      if (!tenantId) return
+
+      const token = localStorage.getItem("token")
+
+      const res = await fetch(
+        `${API_BASE}/api/rentals/tenants/dormitories/${dormitoryId}/tenants/${tenantId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      const data = await res.json()
+
+      if (data.success) {
+
+        const t = data.data
+
+        setFormData({
+          firstName: t.first_name || '',
+          lastName: t.last_name || '',
+          phone: t.phone_number || '',
+          idCard: t.id_card_or_passport || '',
+          address: t.address || '',
+          emergencyName: t.emergency_contact_name || '',
+          emergencyRelation: t.emergency_contact_relation || '',
+          emergencyPhone: t.emergency_contact_phone || '',
+          note: t.note || ''
+        })
+      }
+    }
+    fetchTenant()
+  }, [tenantId])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -105,7 +162,7 @@ export default function Tenantinfo() {
                 </Link>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
                 <Link to={`/manage/${dormitoryId}/room/${roomId}/roominfo`} className="hover:text-emerald-600">
-                  ข้อมูล ห้อง {roomNumber || roomId}
+                  ข้อมูล ห้อง {roomNumber}
                 </Link>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
                 <Link to={`/manage/${dormitoryId}/room/${roomId}/roominfo`} className="hover:text-emerald-600">

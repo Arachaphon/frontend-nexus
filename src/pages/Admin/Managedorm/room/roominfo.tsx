@@ -376,7 +376,7 @@ export default function RoomInfo() {
                                         </div>
 
                                         <div className="px-4 py-3 text-right">
-                                            <Link to={`/manage/${dormitoryId}/room/${roomId}/tenantinfo`}>
+                                            <Link to={`/manage/${dormitoryId}/room/${roomId}/tenant/${tenant.id}`}>
                                             ข้อมูล
                                             </Link>
                                         </div>
