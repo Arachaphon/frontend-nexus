@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# 🏢 Dormitory Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+โปรเจกต์รายวิชา **Fundamental of Database System** และ **Software Process** พัฒนาโดยกลุ่ม **Zero Gravity** สาขาวิศวกรรมซอฟต์แวร์ มหาวิทยาลัยพะเยา | ปีการศึกษา 2568
 
-Currently, two official plugins are available:
+เว็บไซต์บริหารจัดการหอพักที่ช่วยให้การจัดการข้อมูลผู้เช่า ห้องพัก และการคำนวณค่าใช้จ่ายรายเดือนเป็นเรื่องง่ายและมีประสิทธิภาพ
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 💡 ที่มา (Inspiration)
+การบริหารจัดการหอพักในรูปแบบเดิมมักประสบปัญหาเรื่องความซับซ้อนของข้อมูล ไม่ว่าจะเป็นการบันทึกสถานะห้องพัก การคำนวณค่าน้ำ-ค่าไฟที่คลาดเคลื่อน หรือความล่าช้าในการสื่อสารระหว่างเจ้าของหอพักและผู้เช่า
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+กลุ่ม **The Nexus** จึงได้พัฒนาระบบนี้ขึ้นเพื่อเปลี่ยนการทำงานให้เป็นระบบดิจิทัล (Digital Transformation) เพื่อช่วยลดภาระงาน เพิ่มความแม่นยำของข้อมูล และสร้างประสบการณ์ที่ดีให้กับผู้ใช้งานทั้งสองฝ่าย
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🎯 วัตถุประสงค์ (Objectives)
+- **Centralized Data:** เพื่อจัดเก็บข้อมูลห้องพักและผู้เช่าอย่างเป็นระบบในฐานข้อมูลเดียว
+- **Automation:** เพื่อคำนวณค่าใช้จ่ายรายเดือนและออกใบแจ้งหนี้ (Invoice) โดยอัตโนมัติ
+- **Better Communication:** เพิ่มช่องทางการแจ้งซ่อมและการประกาศข่าวสารที่เข้าถึงง่าย
+- **Real-time Monitoring:** ช่วยให้ผู้ดูแลเห็นภาพรวมรายได้และสถานะห้องว่างได้ทันที
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🌐 Demo
+🔗 [ทดลองใช้งานระบบจัดการหอพัก](https://gravityplan.vercel.app/)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠 Tech Stack (Tools)
+- **Vue.js** – Framework สำหรับพัฒนา User Interface แบบ Reactive
+- **Tailwind CSS** – สำหรับการออกแบบดีไซน์ที่รองรับทุกหน้าจอ (Responsive Design)
+- **TypeScript** – เพื่อเพิ่มประสิทธิภาพในการจัดการโครงสร้างข้อมูลและลดข้อผิดพลาด
+- **Supabase** – Backend-as-a-Service สำหรับระบบฐานข้อมูล (PostgreSQL) และ Authentication
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## ✨ ฟีเจอร์หลัก (Key Features)
+
+| Frontend | Backend | Feature Name | Description |
+|----------|---------|--------------|-------------|
+| ✅ | ✅ | **Room Management** | จัดการสถานะห้องพัก (ว่าง/จอง/เต็ม) และข้อมูลราคา |
+| ✅ | ✅ | **Billing System** | บันทึกมิเตอร์น้ำ-ไฟ และคำนวณค่าใช้จ่ายอัตโนมัติ |
+| ✅ | ⌛ | **Maintenance** | ระบบแจ้งซ่อมสำหรับผู้เช่าและระบบจัดการสถานะสำหรับเจ้าของ |
+| ✅ | ⌛ | **Contract & Tenants** | ระบบจัดการสัญญาเช่าและฐานข้อมูลผู้พักอาศัย |
+| ✅ | ⌛ | **Payment Proof** | ระบบอัปโหลดและตรวจสอบหลักฐานการชำระเงิน |
+| ✅ | ⌛ | **Dashboard** | สรุปยอดรายรับและสถิติห้องพักในรูปแบบกราฟ |
+
+---
+
+## 📝 บทบาทผู้ใช้งาน (User Roles)
+
+| บทบาท | คำอธิบาย |
+|---------|------------|
+| **Admin (เจ้าของหอพัก)** | มีสิทธิ์จัดการข้อมูลหอพักทั้งหมด ออกบิล ตรวจสอบรายได้ และจัดการคำขอแจ้งซ่อม |
+| **Tenant (ผู้เช่า)** | ดูรายละเอียดห้องพัก ตรวจสอบค่าใช้จ่ายรายเดือน แจ้งซ่อม และรับข่าวสาร |
+
+---
+
+## 👨‍💻 ทีมผู้พัฒนา (The Team)
+
+| รหัสนิสิต | ชื่อ-นามสกุล | บทบาทหน้าที่ |
+|-------------|----------------------|----------------------|
+| 67022535 | Karunyaphat Kanthanate | UX/UI Design |
+| 67022748 | Peerapat Sawaengram | Project Owner & Frontend Developer |
+| 67023031 | Arachaphon Klinchuen | Backend Developer & Devops |
+
+
+---
+
+## 📞 ติดต่อสอบถาม
+หากมีคำถามหรือข้อเสนอแนะเกี่ยวกับโปรเจกต์ สามารถติดต่อได้ที่:
+- **E-mail:** 67022748@up.ac.th
+- **Phone:** 082-181-9636
