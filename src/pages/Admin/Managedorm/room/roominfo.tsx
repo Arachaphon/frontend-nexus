@@ -237,7 +237,7 @@ export default function RoomInfo() {
                 <hr className="border-gray-300 w-full mb-2" />
 
                 <div className="flex justify-end mb-2">
-                  <Link to={`/manage/${dormitoryId}/room/${roomId}/addcontract`} className="text-sm font-semibold text-gray-600 underline hover:text-gray-900">
+                  <Link to={`/manage/${dormitoryId}/room/${roomId}/editcontract/${contractId}`} className="text-sm font-semibold text-gray-600 underline hover:text-gray-900">
                     แก้ไข
                   </Link>
                 </div>

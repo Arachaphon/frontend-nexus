@@ -28,6 +28,7 @@ import AddTenant from './pages/Admin/Managedorm/room/addtenant.tsx';
 import MoveOut from './pages/Admin/Managedorm/room/moveout.tsx';
 import MoveOutDetail from './pages/Admin/Managedorm/room/moveoutdetail.tsx';
 import EditMeter from './pages/Admin/Managedorm/room/editmeter.tsx';
+import EditContract from './pages/Admin/Managedorm/room/editcontract.tsx';
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-10 text-2xl font-bold text-gray-400">
@@ -73,6 +74,9 @@ function App() {
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId/moveoutdetail" element={<ProtectedRoute><MoveOutDetail /></ProtectedRoute>} />
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId" element={<ProtectedRoute><RoomInfo /></ProtectedRoute>} />
       <Route path="/manage/:dormitoryId/room/:roomId/editmeter/:contractId" element={<ProtectedRoute><EditMeter /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<EditContract />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<ProtectedRoute><EditContract /></ProtectedRoute>} />
+
     </Routes>
   );
 }
