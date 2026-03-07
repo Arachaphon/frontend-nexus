@@ -12,8 +12,6 @@ const GreenCheckIcon = () => (
   </svg>
 );
 
-
-
 const API_BASE = window.__ENV__?.API_BASE ;
 
 const HomeMain = () => {

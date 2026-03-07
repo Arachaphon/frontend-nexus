@@ -1,0 +1,16 @@
+stages:
+  - deploy
+
+# ---------- DEPLOY Vercel ----------
+deploy-vercel:
+  stage: deploy
+  image: node:22
+  variables:
+    TOKEN: $VERCEL_TOKEN
+    VERCEL_ORG_ID: $VERCEL_ORG_ID_X
+    VERCEL_PROJECT_ID: $VERCEL_PROJECT_ID_X
+  script:
+    - npm install --global vercel
+    - vercel pull --yes --environment=preview --token="$TOKEN"
+    - vercel build --token="$TOKEN"
+    - vercel deploy --prebuilt --token="$TOKEN"
