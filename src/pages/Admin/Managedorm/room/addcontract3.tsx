@@ -17,7 +17,7 @@ export default function MeterReading() {
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
-    const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+    const API_BASE = window.__ENV__?.API_BASE ;
 
     // State สำหรับเก็บข้อมูลเลขมิเตอร์
     const [waterMeter, setWaterMeter] = useState('');
@@ -77,7 +77,7 @@ export default function MeterReading() {
             const token = localStorage.getItem('token');
             if (!token) throw new Error('Authentication token not found');
 
-            const res = await fetch(`${API_BASE}/api/meters`, {
+            const res = await fetch(`${API_BASE}/api/meters/${dormitoryId}`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -135,12 +135,12 @@ export default function MeterReading() {
                  {/* Breadcrumb พร้อมเส้นคั่น */}
                  <div className="mb-8 w-full">
                      <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
-                         <Link to="#" className="hover:text-emerald-600 flex items-center gap-1.5">
+                         <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600 flex items-center gap-1.5">
                              <Home className="w-4 h-4" />
                              <span>ห้อง</span>
                          </Link>
                          <ChevronRight className="w-4 h-4 text-gray-400" />
-                         <Link to={`/manage/room/${roomId}`} className="hover:text-emerald-600">
+                         <Link to={`/manage/${dormitoryId}/room/${roomId}`} className="hover:text-emerald-600">
                             ข้อมูล ห้อง {roomNumber || '-' }
                          </Link>
                          <ChevronRight className="w-4 h-4 text-gray-400" />

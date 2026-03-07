@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import 'boxicons/css/boxicons.min.css';
 
-// Pages - ตรวจสอบ Path ให้ตรงกับโฟลเดอร์จริงของคุณ
 import ProtectedRoute from './hooks/ProtectedRoute'
 import Home from './pages/Admin/Home/Home.tsx';
 import Login from './pages/Admin/Login/login.tsx';
@@ -28,6 +27,8 @@ import Tenantinfo from './pages/Admin/Managedorm/room/tenantinfo.tsx';
 import AddTenant from './pages/Admin/Managedorm/room/addtenant.tsx';
 import MoveOut from './pages/Admin/Managedorm/room/moveout.tsx';
 import MoveOutDetail from './pages/Admin/Managedorm/room/moveoutdetail.tsx';
+import EditMeter from './pages/Admin/Managedorm/room/editmeter.tsx';
+import EditContract from './pages/Admin/Managedorm/room/editcontract.tsx';
 import DormInfo from './pages/Admin/Managedorm/settingdorm/dorminfo.tsx';
 import BankInfo from './pages/Admin/Managedorm/settingdorm/bankinfo.tsx';
 import RoomLayout from './pages/Admin/Managedorm/settingdorm/roomlayout.tsx';
@@ -62,15 +63,26 @@ function App() {
       <Route path="/homemain/homefinish" element={<ProtectedRoute requiredRole="owner|landlord"><RoomFinish /></ProtectedRoute>} />
       <Route path="/manage" element={<ProtectedRoute><Manage /></ProtectedRoute>} />
 
-
-
-      {/* --- เพิ่ม Route สำหรับเมนูอื่นๆ ใน Sidebar (กันจอขาว) --- */}
-      {/* คุณค่อยๆ สร้างไฟล์จริงมาแทนที่ Placeholder ทีหลังได้ครับ */}
       <Route path="/repair" element={<Placeholder title="แจ้งซ่อม" />} />
       <Route path="/report" element={<Placeholder title="รายงาน" />} />
       <Route path="/meter" element={<Placeholder title="จดมิเตอร์" />} />
       <Route path="/billing" element={<Placeholder title="ออกบิล" />} />
       <Route path="/settings" element={<Placeholder title="ตั้งค่า" />} />
+
+      <Route path="/manage/:dormitoryId" element={<ProtectedRoute><Manage /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId" element={<ProtectedRoute><RoomDetail /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/addcontract" element={<ProtectedRoute><AddContract /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/addcontract2/:contractId" element={<ProtectedRoute><AdvanceRent /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/addcontract3/:contractId" element={<ProtectedRoute><MeterReading /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/addtenant/:contractId" element={<ProtectedRoute><AddTenant /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/tenant/:tenantId" element={<ProtectedRoute><Tenantinfo /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId/moveout" element={<ProtectedRoute><MoveOut /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId/moveoutdetail" element={<ProtectedRoute><MoveOutDetail /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId" element={<ProtectedRoute><RoomInfo /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/editmeter/:contractId" element={<ProtectedRoute><EditMeter /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<EditContract />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<ProtectedRoute><EditContract /></ProtectedRoute>} />
+
       <Route path="/settings/info" element={<ProtectedRoute requiredRole="owner|landlord"><DormInfo /></ProtectedRoute>} />
       <Route path="/settings/bank" element={<ProtectedRoute requiredRole="owner|landlord"><BankInfo /></ProtectedRoute>} />
       <Route path="/settings/layout" element={<ProtectedRoute requiredRole="owner|landlord"><RoomLayout /></ProtectedRoute>} />
