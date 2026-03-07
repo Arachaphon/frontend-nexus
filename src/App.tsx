@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import 'boxicons/css/boxicons.min.css';
 
-// Pages - ตรวจสอบ Path ให้ตรงกับโฟลเดอร์จริงของคุณ
 import ProtectedRoute from './hooks/ProtectedRoute'
 import Home from './pages/Admin/Home/Home.tsx';
 import Login from './pages/Admin/Login/login.tsx';
@@ -56,25 +55,22 @@ function App() {
       <Route path="/homemain/homefinish" element={<ProtectedRoute requiredRole="owner|landlord"><RoomFinish /></ProtectedRoute>} />
       <Route path="/manage" element={<ProtectedRoute><Manage /></ProtectedRoute>} />
 
-
-
-      {/* --- เพิ่ม Route สำหรับเมนูอื่นๆ ใน Sidebar (กันจอขาว) --- */}
-      {/* คุณค่อยๆ สร้างไฟล์จริงมาแทนที่ Placeholder ทีหลังได้ครับ */}
       <Route path="/repair" element={<Placeholder title="แจ้งซ่อม" />} />
       <Route path="/report" element={<Placeholder title="รายงาน" />} />
       <Route path="/meter" element={<Placeholder title="จดมิเตอร์" />} />
       <Route path="/billing" element={<Placeholder title="ออกบิล" />} />
       <Route path="/settings" element={<Placeholder title="ตั้งค่า" />} />
+
       <Route path="/manage/:dormitoryId" element={<Manage />} />
-      <Route path="/manage/:dormitoryId/room/:roomId" element={<RoomDetail />} /> 
+      <Route path="/manage/:dormitoryId/room/:roomId" element={<RoomDetail />} />
       <Route path="/manage/:dormitoryId/room/:roomId/addcontract" element={<AddContract />} />
       <Route path="/manage/:dormitoryId/room/:roomId/addcontract2/:contractId" element={<AdvanceRent />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/addcontract3/:contractId" element={<MeterReading />} />  
-      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId" element={<RoomInfo />} /> 
+      <Route path="/manage/:dormitoryId/room/:roomId/addcontract3/:contractId" element={<MeterReading />} />
       <Route path="/manage/:dormitoryId/room/:roomId/addtenant/:contractId" element={<AddTenant />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/tenant/:tenantId" element={<Tenantinfo />}/>
-      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveout" element={<MoveOut />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveoutdetail" element={<MoveOutDetail />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/tenant/:tenantId" element={<Tenantinfo />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId/moveout" element={<MoveOut />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId/moveoutdetail" element={<MoveOutDetail />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId" element={<RoomInfo />} />
     </Routes>
   );
 }
