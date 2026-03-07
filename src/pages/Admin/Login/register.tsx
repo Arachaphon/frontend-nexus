@@ -110,7 +110,6 @@ const RegisterPage: React.FC = () => {
           throw new Error(result?.error || 'การลงทะเบียนล้มเหลว');
         }
 
-        alert("สมัครสมาชิกสำเร็จ!");
         navigate('/login');
 
       } catch (err: unknown) {

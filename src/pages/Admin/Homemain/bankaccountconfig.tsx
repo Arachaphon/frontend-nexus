@@ -1,8 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import React from 'react';
-// ตรวจสอบ path ของ component ให้ถูกต้อง
+import { resolvePath, useNavigate } from 'react-router-dom';
 import C_HomeMain from '../../../components/C_homemain'; 
 import Footer from '../../../components/Footerhomemain'; 
+
+declare global {
+  interface Window {
+    __ENV__: {
+      API_BASE: string;
+    };
+  }
+}
 
 // กำหนด Type ของข้อมูลบัญชี
 interface BankAccount {
@@ -24,17 +32,19 @@ const BANK_OPTIONS = [
 ];
 
 const BankAccountConfig = () => {
+  const navigate = useNavigate();
+  const API_BASE = window.__ENV__?.API_BASE ;
+  console.log("API_BASE inside component:", API_BASE);
   // --- States ---
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [paymentNote, setPaymentNote] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Form States
   const [selectedBank, setSelectedBank] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
-  
-  // New State for Payment Note (ส่วนที่เพิ่มใหม่)
-  const [paymentNote, setPaymentNote] = useState('');
 
   // Dropdown State
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -47,6 +57,39 @@ const BankAccountConfig = () => {
     { id: 5, label: 'ค่าห้อง' },
     { id: 6, label: 'สถานะห้อง' },
   ];
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const dormitoryId = localStorage.getItem('dormitoryId');
+      if (!dormitoryId) {
+        alert('ไม่พบข้อมูลหอพัก กรุณากลับไปเริ่มสร้างใหม่');
+        return;
+      }
+      const bankRes = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}`,{
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const bankData = await bankRes.json();
+      if (bankData.success) {
+        setBankAccounts(bankData.data);
+      }
+
+      const dormRes = await fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`,{
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const dormData = await dormRes.json();
+      if (dormData.payment_note) setPaymentNote(dormData.payment_note);
+    } catch (err) {
+      console.error('Fetch Error:',err);
+    }
+  };
 
   // เปิด Modal
   const handleOpenModal = () => {
@@ -67,29 +110,111 @@ const BankAccountConfig = () => {
   };
 
   // บันทึกบัญชี
-  const handleSaveAccount = () => {
+  const handleSaveAccount = async () => {
     if (!selectedBank || !accountNumber.trim() || !accountName.trim()) {
       alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
-
+    const token = localStorage.getItem('token');
+    const dormitoryId = localStorage.getItem('dormitoryId');
     const bankInfo = BANK_OPTIONS.find(b => b.value === selectedBank);
     
-    const newAccount: BankAccount = {
-      id: Date.now(),
-      bankName: selectedBank,
-      bankLogo: bankInfo ? bankInfo.logo : '', 
-      accountNumber: accountNumber,
-      accountName: accountName
-    };
+    try {
+      const response = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          dormitoryId: dormitoryId,
+          bank_name: selectedBank,
+          bank_logo: bankInfo?.logo || '',
+          account_number: accountNumber,
+          account_name: accountName
+        })
+      });
 
-    setBankAccounts([...bankAccounts, newAccount]);
-    handleCloseModal();
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
+      if (!response.ok) {
+        throw new Error("API failed");
+      }
+
+      const data = await response.json();
+        if (data.success) {
+
+          setBankAccounts([...bankAccounts, {
+            id: data.bank_id,
+            bankName: selectedBank,
+            bankLogo: bankInfo?.logo || '',
+            accountNumber: accountNumber,
+            accountName: accountName
+          }]);
+          handleCloseModal();
+        }
+      } catch (err) {
+        alert("ไม่สามารถบันทึกบัญชีได้");
+    }
+  };
+
+  const handleNextStep = async () => {
+    console.log("CLICKED NEXT STEP");
+    if (bankAccounts.length === 0) {
+      alert("กรุณาเพิ่มบัญชีธนาคารอย่างน้อย 1 รายการ");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const dormitoryId = localStorage.getItem('dormitoryId');
+
+      const response = await fetch(`${API_BASE}/api/dormitories/banks/payment-note/${dormitoryId}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          dormitoryId: dormitoryId,
+          payment_note: paymentNote
+        })
+      });
+      if (response.status === 403) {
+        window.location.href = '/homemain'
+        return
+      }
+      if (response.ok) {
+        navigate('/homemain/floorsetup');
+      }
+    } catch (err) {
+      alert("บันทึกหมายเหตุไม่สำเร็จ");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ลบบัญชี
-  const handleDeleteAccount = (id: number) => {
-    setBankAccounts(bankAccounts.filter(acc => acc.id !== id));
+  const handleDeleteAccount = async (id: string | number) => {
+    if (!window.confirm("คุณต้องการลบบัญชีนี้ใช่หรือไม่?")) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const dormitoryId = localStorage.getItem('dormitoryId');
+      const res = await fetch(`${API_BASE}/api/dormitories/banks/${dormitoryId}/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setBankAccounts(bankAccounts.filter(acc => acc.id !== id));
+      }
+    } catch (err) {
+      alert("ลบไม่สำเร็จ");
+    }
   };
 
   // เลือกธนาคารจาก Custom Dropdown
@@ -260,8 +385,14 @@ const BankAccountConfig = () => {
               กลับ
             </button>
           </a>
-          <button className={`px-10 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all ${bankAccounts.length > 0 ? 'bg-[#7d7a75] hover:bg-[#6b6863] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
-            ถัดไป
+          <button
+            type="button" 
+            onClick={handleNextStep}
+            disabled={bankAccounts.length === 0 || loading}
+            className={`px-10 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all ${bankAccounts.length > 0 
+              ? 'bg-[#7d7a75] hover:bg-[#6b6863] text-white' 
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+            {loading ? 'กำลังบันทึก...' : 'ถัดไป'}
           </button>
         </div>
       </div>
@@ -355,6 +486,6 @@ const BankAccountConfig = () => {
       )}
     </div> 
   );
-}
+};
 
 export default BankAccountConfig;

@@ -43,7 +43,7 @@ const LoginPage = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); 
-    
+    console.log('handleLogin called')
     const { username, password } = formData;
     const newErrors: { username?: string; password?: string } = {};
 
@@ -60,33 +60,33 @@ const LoginPage = () => {
 
     try {
       // แก้ไขจุดสำคัญ: ดึงค่าจาก window.__ENV__ ตามมาตรฐาน Docker/อาจารย์
-      const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+      const API_BASE = window.__ENV__?.API_BASE || 'https://backend-nexus.67023031-devops.workers.dev';
       
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        
       });
 
       const result = await response.json();
 
       if (response.ok && result.success) {
+        if (result.token) {
+          localStorage.setItem('token',result.token);
+        }
         if (rememberMe) {
           localStorage.setItem('rememberUsername', formData.username);
-          localStorage.setItem('rememberPassword', formData.password);
         } else {
           localStorage.removeItem('rememberUsername');
-          localStorage.removeItem('rememberPassword');
         }
 
         if (result.user) {
           localStorage.setItem('userSession', JSON.stringify(result.user));
         }
 
-        alert('เข้าสู่ระบบสำเร็จ');
         navigate('/homemain'); 
       } else {
-        // แสดงข้อความ Error ที่ส่งมาจาก Backend (Hono)
         throw new Error(result.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
       }
 
