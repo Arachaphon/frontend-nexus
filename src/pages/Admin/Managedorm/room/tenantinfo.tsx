@@ -173,7 +173,7 @@ export default function Tenantinfo() {
             {/* Breadcrumb */}
             <div className="mb-6 w-full">
               <div className="flex items-center gap-2 mb-4 text-sm text-gray-500 flex-wrap">
-                <Link to="/homemain" className="hover:text-emerald-600 flex items-center gap-1.5">
+                <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600 flex items-center gap-1.5">
                   <Home className="w-4 h-4" />
                   <span>ห้อง</span>
                 </Link>

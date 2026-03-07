@@ -31,7 +31,7 @@ export default function MoveOutDetail() {
 
   const [dormitoryName, setDormitoryName] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const API_BASE = window.__ENV__?.API_BASE ;
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -100,12 +100,12 @@ export default function MoveOutDetail() {
             {/* Breadcrumb */}
             <div className="mb-8 w-full">
               <div className="flex items-center gap-2 mb-4 text-sm text-gray-500 flex-wrap">
-                <Link to="/homemain" className="hover:text-emerald-600 flex items-center gap-1.5">
+                <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600 flex items-center gap-1.5">
                   <Home className="w-4 h-4" /><span>ห้อง</span>
                 </Link>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
-                <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600">
-                  ข้อมูล ห้อง {roomNumber || roomId}
+                <Link to={`/manage/${dormitoryId}/room/${roomId}`} className="hover:text-emerald-600">
+                  ข้อมูล ห้อง {roomNumber }
                 </Link>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-800 font-medium">สรุปการย้ายออก</span>

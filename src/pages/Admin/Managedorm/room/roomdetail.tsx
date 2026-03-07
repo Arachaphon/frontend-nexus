@@ -71,13 +71,11 @@ export default function RoomDetail() {
         fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}/rooms/${roomId}`, { method: 'GET', headers }),
       ]);
 
-      // redirect ถ้า 403
       if (dormRes.status === 403 || roomRes.status === 403) {
         window.location.href = '/homemain';
         return;
       }
 
-      // ข้อมูลหลักต้องโหลดได้
       if (!dormRes.ok) throw new Error(`ไม่สามารถโหลดข้อมูลหอพักได้ (${dormRes.status})`);
       if (!roomRes.ok) throw new Error(`ไม่สามารถโหลดข้อมูลห้องได้ (${roomRes.status})`);
 
@@ -86,7 +84,6 @@ export default function RoomDetail() {
       setDormitoryName(dormData.data?.name || dormData.name || '');
       setRoom(roomData.data);
 
-      // tenant และ contract — ถ้า error แสดงเป็น [] ไม่ crash
       if (tenantRes.ok) {
         const tenantData = await tenantRes.json();
         setTenants(tenantData.data || []);

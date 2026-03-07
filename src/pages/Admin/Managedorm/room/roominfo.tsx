@@ -74,7 +74,7 @@ export default function RoomInfo() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         };
-
+        
         const [dormRes, roomRes, tenantRes, contractRes, meterRes] = await Promise.all([
           fetch(`${API_BASE}/api/dormitories/main/${dormitoryId}`, { headers }),
           fetch(`${API_BASE}/api/dormitories/rooms/${dormitoryId}/${roomId}`, { headers }),
@@ -82,7 +82,7 @@ export default function RoomInfo() {
           fetch(`${API_BASE}/api/rentals/contracts/dormitories/${dormitoryId}/rooms/${roomId}`, { headers }),
           fetch(`${API_BASE}/api/meters/${dormitoryId}/contracts/${contractId}`, { headers }),
         ]);
-
+        
         if ([dormRes, roomRes, tenantRes, contractRes].some((r) => r.status === 403)) {
           window.location.href = '/homemain';
           return;
@@ -207,7 +207,7 @@ export default function RoomInfo() {
             {/* Breadcrumb */}
             <div className="mb-8 w-full">
               <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
-                <Link to="/homemain" className="hover:text-emerald-600 flex items-center gap-1.5">
+                <Link to={`/manage/${dormitoryId}`} className="hover:text-emerald-600 flex items-center gap-1.5">
                   <Home className="w-4 h-4" /><span>ห้อง</span>
                 </Link>
                 <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -261,7 +261,7 @@ export default function RoomInfo() {
                 {/* เลขมิเตอร์ */}
                 <div className="mb-4 flex justify-between items-center mt-auto">
                   <h3 className="text-gray-800 font-medium">เลขมิเตอร์วันเข้าพัก</h3>
-                  <Link to={`/manage/${dormitoryId}/room/${roomId}/addcontract3/1`} className="text-sm text-gray-600 underline hover:text-gray-900">
+                  <Link to={`/manage/${dormitoryId}/room/${roomId}/editmeter/${contractId}`}  className="text-sm text-gray-600 underline hover:text-gray-900">
                     แก้ไข
                   </Link>
                 </div>

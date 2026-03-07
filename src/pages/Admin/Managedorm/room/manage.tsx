@@ -45,8 +45,8 @@ const statusMap: Record<string, string> = {
 
 export default function Manage() {
   const { dormitoryId} = useParams();
-  const navigate = useNavigate(); // เรียกใช้งาน navigate สำหรับเปลี่ยนหน้า
-  const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+  const navigate = useNavigate(); 
+  const API_BASE = window.__ENV__?.API_BASE ;
   const [statsData, setStatsData] = useState({
     total: 0,
     vacant: 0,
