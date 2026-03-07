@@ -61,7 +61,6 @@ function App() {
       <Route path="/homemain/roomprice" element={<ProtectedRoute requiredRole="owner|landlord"><RoomPriceSetup /></ProtectedRoute>} />
       <Route path="/homemain/roomstatus" element={<ProtectedRoute requiredRole="owner|landlord"><RoomStatusSetup /></ProtectedRoute>} />
       <Route path="/homemain/homefinish" element={<ProtectedRoute requiredRole="owner|landlord"><RoomFinish /></ProtectedRoute>} />
-      <Route path="/manage" element={<ProtectedRoute><Manage /></ProtectedRoute>} />
 
       <Route path="/repair" element={<Placeholder title="แจ้งซ่อม" />} />
       <Route path="/report" element={<Placeholder title="รายงาน" />} />
@@ -80,24 +79,14 @@ function App() {
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId/moveoutdetail" element={<ProtectedRoute><MoveOutDetail /></ProtectedRoute>} />
       <Route path="/manage/:dormitoryId/room/:roomId/roominfo/:contractId" element={<ProtectedRoute><RoomInfo /></ProtectedRoute>} />
       <Route path="/manage/:dormitoryId/room/:roomId/editmeter/:contractId" element={<ProtectedRoute><EditMeter /></ProtectedRoute>} />
-      <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<EditContract />} />
       <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<ProtectedRoute><EditContract /></ProtectedRoute>} />
 
-      <Route path="/settings/info" element={<ProtectedRoute requiredRole="owner|landlord"><DormInfo /></ProtectedRoute>} />
-      <Route path="/settings/bank" element={<ProtectedRoute requiredRole="owner|landlord"><BankInfo /></ProtectedRoute>} />
-      <Route path="/settings/layout" element={<ProtectedRoute requiredRole="owner|landlord"><RoomLayout /></ProtectedRoute>} />
-      <Route path="/settings/available" element={<ProtectedRoute requiredRole="owner|landlord"><RoomStatus /></ProtectedRoute>} />
-      <Route path="/settings/room-rates" element={<ProtectedRoute requiredRole="owner|landlord"><RoomPriceInfo /></ProtectedRoute>} />
-      <Route path="/manage/:dormitoryId" element={<Manage />} />
-      <Route path="/manage/:dormitoryId/room/:roomId" element={<RoomDetail />} /> 
-      <Route path="/manage/:dormitoryId/room/:roomId/addcontract" element={<AddContract />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/addcontract2/:contractId" element={<AdvanceRent />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/addcontract3/:contractId" element={<MeterReading />} />  
-      <Route path="/manage/:dormitoryId/room/:roomId/roominfo" element={<RoomInfo />} /> 
-      <Route path="/manage/:dormitoryId/room/:roomId/addtenant" element={<AddTenant />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/tenantinfo" element={<Tenantinfo />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveout" element={<MoveOut />} />
-      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveoutdetail" element={<MoveOutDetail />} />
+      <Route path="/settings/info" element={<ProtectedRoute ><DormInfo /></ProtectedRoute>} />
+      <Route path="/settings/bank" element={<ProtectedRoute ><BankInfo /></ProtectedRoute>} />
+      <Route path="/settings/layout" element={<ProtectedRoute ><RoomLayout /></ProtectedRoute>} />
+      <Route path="/settings/available" element={<ProtectedRoute ><RoomStatus /></ProtectedRoute>} />
+      <Route path="/settings/room-rates" element={<ProtectedRoute ><RoomPriceInfo /></ProtectedRoute>} />
+
     </Routes>
   );
 }
