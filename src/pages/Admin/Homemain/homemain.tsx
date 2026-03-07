@@ -12,6 +12,13 @@ const GreenCheckIcon = () => (
   </svg>
 );
 
+const GreenCheckIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="#22c55e" strokeWidth="2"/>
+    <path d="M8 12L11 15L16 9" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const API_BASE = window.__ENV__?.API_BASE ;
 
 const HomeMain = () => {

@@ -29,6 +29,12 @@ import MoveOut from './pages/Admin/Managedorm/room/moveout.tsx';
 import MoveOutDetail from './pages/Admin/Managedorm/room/moveoutdetail.tsx';
 import EditMeter from './pages/Admin/Managedorm/room/editmeter.tsx';
 import EditContract from './pages/Admin/Managedorm/room/editcontract.tsx';
+import DormInfo from './pages/Admin/Managedorm/settingdorm/dorminfo.tsx';
+import BankInfo from './pages/Admin/Managedorm/settingdorm/bankinfo.tsx';
+import RoomLayout from './pages/Admin/Managedorm/settingdorm/roomlayout.tsx';
+import RoomStatus from './pages/Admin/Managedorm/settingdorm/roomstatusinfo.tsx';
+import RoomPrice from './pages/Admin/Managedorm/settingdorm/roompriceinfo.tsx';
+import RoomPriceInfo from './pages/Admin/Managedorm/settingdorm/roompriceinfo.tsx';
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-10 text-2xl font-bold text-gray-400">
@@ -77,6 +83,21 @@ function App() {
       <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<EditContract />} />
       <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<ProtectedRoute><EditContract /></ProtectedRoute>} />
 
+      <Route path="/settings/info" element={<ProtectedRoute requiredRole="owner|landlord"><DormInfo /></ProtectedRoute>} />
+      <Route path="/settings/bank" element={<ProtectedRoute requiredRole="owner|landlord"><BankInfo /></ProtectedRoute>} />
+      <Route path="/settings/layout" element={<ProtectedRoute requiredRole="owner|landlord"><RoomLayout /></ProtectedRoute>} />
+      <Route path="/settings/available" element={<ProtectedRoute requiredRole="owner|landlord"><RoomStatus /></ProtectedRoute>} />
+      <Route path="/settings/room-rates" element={<ProtectedRoute requiredRole="owner|landlord"><RoomPriceInfo /></ProtectedRoute>} />
+      <Route path="/manage/:dormitoryId" element={<Manage />} />
+      <Route path="/manage/:dormitoryId/room/:roomId" element={<RoomDetail />} /> 
+      <Route path="/manage/:dormitoryId/room/:roomId/addcontract" element={<AddContract />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/addcontract2/:contractId" element={<AdvanceRent />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/addcontract3/:contractId" element={<MeterReading />} />  
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo" element={<RoomInfo />} /> 
+      <Route path="/manage/:dormitoryId/room/:roomId/addtenant" element={<AddTenant />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/tenantinfo" element={<Tenantinfo />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveout" element={<MoveOut />} />
+      <Route path="/manage/:dormitoryId/room/:roomId/roominfo/moveoutdetail" element={<MoveOutDetail />} />
     </Routes>
   );
 }
