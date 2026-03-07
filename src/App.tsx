@@ -32,8 +32,8 @@ import DormInfo from './pages/Admin/Managedorm/settingdorm/dorminfo.tsx';
 import BankInfo from './pages/Admin/Managedorm/settingdorm/bankinfo.tsx';
 import RoomLayout from './pages/Admin/Managedorm/settingdorm/roomlayout.tsx';
 import RoomStatus from './pages/Admin/Managedorm/settingdorm/roomstatusinfo.tsx';
-import RoomPrice from './pages/Admin/Managedorm/settingdorm/roompriceinfo.tsx';
 import RoomPriceInfo from './pages/Admin/Managedorm/settingdorm/roompriceinfo.tsx';
+import RepairManagement from './pages/Admin/Managedorm/reportrepair/repairmanagement.tsx';
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-10 text-2xl font-bold text-gray-400">
@@ -66,7 +66,7 @@ function App() {
 
       {/* --- เพิ่ม Route สำหรับเมนูอื่นๆ ใน Sidebar (กันจอขาว) --- */}
       {/* คุณค่อยๆ สร้างไฟล์จริงมาแทนที่ Placeholder ทีหลังได้ครับ */}
-      <Route path="/repair" element={<Placeholder title="แจ้งซ่อม" />} />
+      <Route path="/repair" element={<ProtectedRoute><RepairManagement /></ProtectedRoute>} />
       <Route path="/report" element={<Placeholder title="รายงาน" />} />
       <Route path="/meter" element={<Placeholder title="จดมิเตอร์" />} />
       <Route path="/billing" element={<Placeholder title="ออกบิล" />} />
