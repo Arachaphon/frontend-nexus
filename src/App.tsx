@@ -81,7 +81,7 @@ function App() {
       <Route path="/manage/:dormitoryId/room/:roomId/editmeter/:contractId" element={<ProtectedRoute><EditMeter /></ProtectedRoute>} />
       <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<ProtectedRoute><EditContract /></ProtectedRoute>} />
 
-      <Route path="/settings/info" element={<ProtectedRoute ><DormInfo /></ProtectedRoute>} />
+      <Route path="/settings/info/:dormitoryId" element={<ProtectedRoute ><DormInfo /></ProtectedRoute>} />
       <Route path="/settings/bank" element={<ProtectedRoute ><BankInfo /></ProtectedRoute>} />
       <Route path="/settings/layout" element={<ProtectedRoute ><RoomLayout /></ProtectedRoute>} />
       <Route path="/settings/available" element={<ProtectedRoute ><RoomStatus /></ProtectedRoute>} />
