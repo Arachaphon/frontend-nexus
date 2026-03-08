@@ -25,6 +25,10 @@
 🔗 [ทดลองใช้งานระบบจัดการหอพัก](thenexus-chi.vercel.app)
 
 ---
+## 🛠 Backend github
+🔗 https://github.com/Arachaphon/backend-nexus.git
+
+---
 
 ## 🛠 Tech Stack (Tools)
 - **React** – Framework สำหรับพัฒนา User Interface แบบ Reactive
