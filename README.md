@@ -61,7 +61,7 @@
 |-------------|----------------------|----------------------|
 | 67022535 | Karunyaphat Kanthanate | UX/UI Design |
 | 67022748 | Peerapat Sawaengram | Project Owner & Frontend Developer |
-| 67023031 | Arachaphon Klinchuen | Backend Developer & Devops |
+| 67023031 | Arachaphon Klinchuen | Backend Developer & Frontend Developer |
 
 
 ---
