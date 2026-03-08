@@ -62,9 +62,6 @@ const inputCls = (hasError?: boolean) =>
    focus:ring-2 focus:ring-[#0e4b3a]/25 focus:border-[#0e4b3a]
    ${hasError ? 'border-red-400 bg-red-50' : 'border-gray-300 hover:border-gray-400'}`;
 
-/* ────────────────────────────────────────────────────────── */
-/* Section header                                            */
-/* ────────────────────────────────────────────────────────── */
 const Section = ({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) => (
   <div className="flex items-start gap-3 mb-6">
     <div className="w-9 h-9 rounded-lg bg-[#0e4b3a]/10 flex items-center justify-center text-[#0e4b3a] shrink-0 mt-0.5">
@@ -77,9 +74,6 @@ const Section = ({ icon, title, subtitle }: { icon: React.ReactNode; title: stri
   </div>
 );
 
-/* ────────────────────────────────────────────────────────── */
-/* Toast notification                                        */
-/* ────────────────────────────────────────────────────────── */
 const Toast = ({ status, message }: { status: SaveStatus; message: string }) => {
   if (status === 'idle') return null;
 
@@ -116,9 +110,6 @@ const Toast = ({ status, message }: { status: SaveStatus; message: string }) => 
   );
 };
 
-/* ────────────────────────────────────────────────────────── */
-/* Main component                                            */
-/* ────────────────────────────────────────────────────────── */
 export default function DormInfo() {
   const { dormitoryId } = useParams();
   const navigate = useNavigate();
@@ -137,7 +128,6 @@ export default function DormInfo() {
 
   const API_BASE = window.__ENV__?.API_BASE;
 
-  // ── Fetch existing data ──────────────────────────────────
   const fetchDormitoryData = useCallback(async () => {
     const activeDormId = dormitoryId || localStorage.getItem('dormitoryId');
     if (!activeDormId) { setInitialLoad(false); return; }
@@ -256,7 +246,7 @@ export default function DormInfo() {
       setOriginalData({ ...formData });
 
       setSaveStatus('success');
-      setToastMsg('บันทึกข้อมูลเรียบร้อยแล้ว ✓');
+      setToastMsg('บันทึกข้อมูลเรียบร้อยแล้ว');
     } catch (err: unknown) {
       setSaveStatus('error');
       setToastMsg(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก');
