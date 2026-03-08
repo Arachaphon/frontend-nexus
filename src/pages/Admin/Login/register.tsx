@@ -91,7 +91,7 @@ const RegisterPage: React.FC = () => {
     if (Object.keys(newErrors).length === 0) {
       setLoading(true);
       try {
-        const API_BASE = window.__ENV__?.API_BASE || 'http://localhost:8787';
+        const API_BASE = window.__ENV__?.API_BASE ;
 
         const response = await fetch(`${API_BASE}/api/auth/register`, {
           method: 'POST',

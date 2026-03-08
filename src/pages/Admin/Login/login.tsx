@@ -59,8 +59,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // แก้ไขจุดสำคัญ: ดึงค่าจาก window.__ENV__ ตามมาตรฐาน Docker/อาจารย์
-      const API_BASE = window.__ENV__?.API_BASE || 'https://backend-nexus.67023031-devops.workers.dev';
+      const API_BASE = window.__ENV__?.API_BASE ;
       
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
@@ -83,6 +82,7 @@ const LoginPage = () => {
 
         if (result.user) {
           localStorage.setItem('userSession', JSON.stringify(result.user));
+          localStorage.setItem('user', JSON.stringify(result.user));
         }
 
         navigate('/homemain'); 

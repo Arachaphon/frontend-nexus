@@ -52,15 +52,15 @@ function App() {
       <Route path="/createpassword" element={<CreatePasswordPage />} />
       
       <Route path="/homemain" element={<ProtectedRoute><HomeMain /></ProtectedRoute>}/>
-      <Route path="/homemain/adddormitory" element={<ProtectedRoute requiredRole="owner|landlord"><Adddormitory /></ProtectedRoute>}/>
-      <Route path="/homemain/utilitycalculation" element={<ProtectedRoute requiredRole="owner|landlord"><UtilityCalculation /></ProtectedRoute>} />
-      <Route path="/homemain/profilesettings" element={<ProtectedRoute requiredRole="owner|landlord"><ProfileSettings /></ProtectedRoute>} />
-      <Route path="/homemain/bankaccountconfig" element={<ProtectedRoute requiredRole="owner|landlord"><BankAccountConfig /></ProtectedRoute>} />
-      <Route path="/homemain/floorsetup" element={<ProtectedRoute requiredRole="owner|landlord"><FloorSetup /></ProtectedRoute>} />
-      <Route path="/homemain/roomsetup" element={<ProtectedRoute requiredRole="owner|landlord"><RoomLayoutSetup /></ProtectedRoute>} />
-      <Route path="/homemain/roomprice" element={<ProtectedRoute requiredRole="owner|landlord"><RoomPriceSetup /></ProtectedRoute>} />
-      <Route path="/homemain/roomstatus" element={<ProtectedRoute requiredRole="owner|landlord"><RoomStatusSetup /></ProtectedRoute>} />
-      <Route path="/homemain/homefinish" element={<ProtectedRoute requiredRole="owner|landlord"><RoomFinish /></ProtectedRoute>} />
+      <Route path="/homemain/adddormitory" element={<ProtectedRoute requiredRole="user"><Adddormitory /></ProtectedRoute>}/>
+      <Route path="/homemain/utilitycalculation" element={<ProtectedRoute requiredRole="user"><UtilityCalculation /></ProtectedRoute>} />
+      <Route path="/homemain/profilesettings" element={<ProtectedRoute requiredRole="user"><ProfileSettings /></ProtectedRoute>} />
+      <Route path="/homemain/bankaccountconfig" element={<ProtectedRoute requiredRole="user"><BankAccountConfig /></ProtectedRoute>} />
+      <Route path="/homemain/floorsetup" element={<ProtectedRoute requiredRole="user"><FloorSetup /></ProtectedRoute>} />
+      <Route path="/homemain/roomsetup" element={<ProtectedRoute requiredRole="user"><RoomLayoutSetup /></ProtectedRoute>} />
+      <Route path="/homemain/roomprice" element={<ProtectedRoute requiredRole="user"><RoomPriceSetup /></ProtectedRoute>} />
+      <Route path="/homemain/roomstatus" element={<ProtectedRoute requiredRole="user"><RoomStatusSetup /></ProtectedRoute>} />
+      <Route path="/homemain/homefinish" element={<ProtectedRoute requiredRole="user"><RoomFinish /></ProtectedRoute>} />
 
       <Route path="/repair" element={<Placeholder title="แจ้งซ่อม" />} />
       <Route path="/report" element={<Placeholder title="รายงาน" />} />
@@ -81,11 +81,16 @@ function App() {
       <Route path="/manage/:dormitoryId/room/:roomId/editmeter/:contractId" element={<ProtectedRoute><EditMeter /></ProtectedRoute>} />
       <Route path="/manage/:dormitoryId/room/:roomId/editcontract/:contractId" element={<ProtectedRoute><EditContract /></ProtectedRoute>} />
 
-      <Route path="/settings/info/:dormitoryId" element={<ProtectedRoute ><DormInfo /></ProtectedRoute>} />
-      <Route path="/settings/bank" element={<ProtectedRoute ><BankInfo /></ProtectedRoute>} />
-      <Route path="/settings/layout" element={<ProtectedRoute ><RoomLayout /></ProtectedRoute>} />
-      <Route path="/settings/available" element={<ProtectedRoute ><RoomStatus /></ProtectedRoute>} />
-      <Route path="/settings/room-rates" element={<ProtectedRoute ><RoomPriceInfo /></ProtectedRoute>} />
+      <Route path="/settings/info/:dormitoryId"
+        element={<ProtectedRoute requiredRole={['owner','manager']}><DormInfo /></ProtectedRoute>} />
+      <Route path="/settings/bank"
+        element={<ProtectedRoute requiredRole={['owner','manager']}><BankInfo /></ProtectedRoute>} />
+      <Route path="/settings/layout"
+        element={<ProtectedRoute requiredRole={['owner','manager']}><RoomLayout /></ProtectedRoute>} />
+      <Route path="/settings/available"
+        element={<ProtectedRoute requiredRole={['owner','manager']}><RoomStatus /></ProtectedRoute>} />
+      <Route path="/settings/room-rates"
+        element={<ProtectedRoute requiredRole={['owner','manager']}><RoomPriceInfo /></ProtectedRoute>} />
 
     </Routes>
   );
