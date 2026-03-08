@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { 
   Home, 
   Wrench, 
@@ -27,8 +27,7 @@ interface MenuItem {
 
 const Sidebar = () => {
   const location = useLocation();
-  
-  // แก้ไข Error: ระบุ Type เป็น <string | null> เพื่อให้เก็บค่า id หรือ null ได้
+  const { dormitoryId } = useParams<{ dormitoryId: string }>();
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
 
   const menuItems: MenuItem[] = [
@@ -50,7 +49,7 @@ const Sidebar = () => {
       icon: Settings, 
       path: '/settings',
       subMenu: [
-        { label: 'ข้อมูลหอพัก', path: '/settings/info' },
+        { label: 'ข้อมูลหอพัก', path: dormitoryId ? `/settings/info/${dormitoryId}`  : '/settings/info' },
         { label: 'บัญชีธนาคาร', path: '/settings/bank' },
         { label: 'ผังห้อง', path: '/settings/layout' },
         { label: 'ห้องว่าง', path: '/settings/available' },
