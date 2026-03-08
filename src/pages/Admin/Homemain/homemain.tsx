@@ -15,7 +15,7 @@ const GreenCheckIcon = () => (
 const API_BASE = window.__ENV__?.API_BASE ;
 
 const HomeMain = () => {
-  const { isOwnerOrLandlord } = useAuth()
+  const { isUser} = useAuth()
   const [activeTab, setActiveTab] = useState('dormitory');
   const [dormitories, setDormitories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -222,7 +222,7 @@ const HomeMain = () => {
               </svg>
               จัดการหอพัก
             </button>
-            {isOwnerOrLandlord && (
+            {isUser && (
               <button
                 onClick={() => setActiveTab('users')}
                 className={`flex items-center gap-4 pb-2 text-lg font-medium transition-colors border-b-2 ${
@@ -236,7 +236,7 @@ const HomeMain = () => {
               </button>
             )}
           </div>
-          {isOwnerOrLandlord && (
+          {isUser && (
             <div className="mt-4 md:mt-0 w-[140px] flex justify-end">
               {activeTab === 'dormitory' && (
                 <Link to="/homemain/adddormitory">
@@ -310,7 +310,13 @@ const HomeMain = () => {
                       <div className="col-span-1 text-gray-800 ">{index + 1}</div>
                       <div className="col-span-3 flex flex-col  gap-1 ">
                         <span className="text-gray-800 font-medium">{user.full_name}</span>
-                        <span className="text-gray-500 text-xs">{user.role === 'owner' ? 'เจ้าของ' : 'ผู้จัดการ'}</span>
+                        <span className="text-gray-500 text-xs">{
+                              user.role === 'owner'
+                                ? 'เจ้าของ'
+                                : user.role === 'manager'
+                                ? 'ผู้จัดการ'
+                                : 'เจ้าหน้าที่'
+                            }</span>
                       </div>
                       <div className="col-span-3 flex flex-col gap-1">
                         <span className="text-gray-800">{user.phone || '-'}</span>
@@ -400,7 +406,9 @@ const HomeMain = () => {
                     <label className="text-sm font-medium text-gray-700">ตำแหน่ง <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <select name="role" value={formData.role} onChange={handleChange} className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-600 appearance-none focus:outline-none focus:ring-1 focus:ring-stone-100">
-                        <option value="" disabled>ตำแหน่ง</option><option value="owner">เจ้าของ</option><option value="manager">ผู้จัดการ</option>
+                        <option value="" disabled>ตำแหน่ง</option>
+                        <option value="manager">ผู้จัดการ</option>
+                        <option value="staff">เจ้าหน้าที่</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -460,11 +468,11 @@ const HomeMain = () => {
                     </thead>
                     <tbody>
                       <tr className="border-b border-gray-300">
-                        <td className="py-3 border-r border-gray-300 bg-gray-50 text-gray-800">เจ้าของ</td>
+                        <td className="py-3 border-r border-gray-300 bg-gray-50 text-gray-800">ผู้จัดการ</td>
                         {[...Array(6)].map((_, i) => (<td key={i} className="py-3 border-r border-gray-300 last:border-r-0"><div className="flex justify-center"><GreenCheckIcon /></div></td>))}
                       </tr>
                       <tr>
-                        <td className="py-3 border-r border-gray-300 bg-gray-50 text-gray-800">ผู้จัดการ</td>
+                        <td className="py-3 border-r border-gray-300 bg-gray-50 text-gray-800">เจ้าหน้าที่</td>
                         {[...Array(5)].map((_, i) => (<td key={i} className="py-3 border-r border-gray-300"><div className="flex justify-center"><GreenCheckIcon /></div></td>))}
                         <td className="py-3 border-r border-gray-300"></td><td className="py-3"></td>
                       </tr>

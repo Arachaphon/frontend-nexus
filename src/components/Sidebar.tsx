@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth'
 import { 
   Home, 
   Wrench, 
@@ -28,10 +29,21 @@ interface MenuItem {
 const Sidebar = () => {
   const location = useLocation();
   const { dormitoryId } = useParams<{ dormitoryId: string }>();
+  const activeDormId = dormitoryId || localStorage.getItem('dormitoryId')
+  const { user } = useAuth()
+  const isOwnerOrManager = ['owner', 'manager'].includes(user?.role) 
+  || ['owner', 'manager'].includes(user?.global_role)
+  console.log("USER ROLE:", user?.role)
+  console.log("GLOBAL ROLE:", user?.global_role)
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
 
   const menuItems: MenuItem[] = [
-    { id: 'rooms', label: 'ห้อง', icon: Home, path: '/manage' },
+    { 
+      id: 'rooms', 
+      label: 'ห้อง', 
+      icon: Home, 
+      path: activeDormId ? `/manage/${activeDormId}` : '/homemain'
+    },
     { id: 'repair', label: 'แจ้งซ่อม', icon: Wrench, path: '/repair' },
     { id: 'meter', label: 'จดมิเตอร์', icon: Edit3, path: '/meter' },
     { 
@@ -43,19 +55,22 @@ const Sidebar = () => {
         { label: 'บิลรายเดือน', path: '/billing/monthly' },
       ]
     },
-    { 
-      id: 'settings', 
-      label: 'ตั้งค่า', 
-      icon: Settings, 
+    ...(isOwnerOrManager ? [{
+      id: 'settings',
+      label: 'ตั้งค่า',
+      icon: Settings,
       path: '/settings',
       subMenu: [
-        { label: 'ข้อมูลหอพัก', path: dormitoryId ? `/settings/info/${dormitoryId}`  : '/settings/info' },
+        { 
+          label: 'ข้อมูลหอพัก', 
+          path: activeDormId ? `/settings/info/${activeDormId}` : '/homemain'
+        },
         { label: 'บัญชีธนาคาร', path: '/settings/bank' },
         { label: 'ผังห้อง', path: '/settings/layout' },
         { label: 'ห้องว่าง', path: '/settings/available' },
         { label: 'ค่าห้อง', path: '/settings/room-rates' },
       ]
-    },
+    }] : [])
   ];
 
   // ตรวจสอบ URL เพื่อเปิด Sub-menu อัตโนมัติเมื่อ Refresh หน้า

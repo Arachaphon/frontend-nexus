@@ -1,32 +1,49 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
-export default function ProtectedRoute({ 
+type Role = 'user' | 'owner' | 'manager' | 'staff' | 'owner|manager'
+
+export default function ProtectedRoute({
   children,
-  requiredRole 
-}: { 
+  requiredRole
+}: {
   readonly children: React.ReactNode
-  readonly requiredRole?: 'owner' | 'manager' | 'landlord' | 'owner|landlord'
+  readonly requiredRole?: Role | Role[]  
 }) {
   const token = localStorage.getItem('token')
-  const raw = localStorage.getItem('userSession')
+  const raw   = localStorage.getItem('userSession')
   const { user } = useAuth()
 
-  if (!token || !raw) {
-    return <Navigate to="/login" replace />
+  if (!token || !raw) return <Navigate to="/login" replace />
+  if (!requiredRole)  return <>{children}</>
+
+  if (Array.isArray(requiredRole)) {
+    if (!user?.role || !requiredRole.includes(user.role as Role))
+      return <Navigate to="/homemain" replace />
+    return <>{children}</>
   }
 
-  if (requiredRole) {
-    if (requiredRole === 'owner|landlord') {
-      const allowed = user?.role === 'owner' || user?.global_role === 'landlord'
-      if (!allowed) return <Navigate to="/homemain" replace />
-    } 
-    else if (requiredRole === 'landlord') {
-      if (user?.global_role !== 'landlord') return <Navigate to="/homemain" replace />
-    }
-    else {
-      if (user?.role !== requiredRole) return <Navigate to="/homemain" replace />
-    }
+  switch (requiredRole) {
+    case 'user':
+      if (user?.global_role !== 'user')
+        return <Navigate to="/homemain" replace />
+      break
+    case 'owner|manager':
+      if (user?.role !== 'owner' && user?.role !== 'manager')
+        return <Navigate to="/homemain" replace />
+      break
+    case 'owner':
+      if (user?.role !== 'owner')
+        return <Navigate to="/homemain" replace />
+      break
+    case 'manager':
+      if (user?.role !== 'manager')
+        return <Navigate to="/homemain" replace />
+      break
+    case 'staff':
+      if (user?.role !== 'staff')
+        return <Navigate to="/homemain" replace />
+      break
   }
 
   return <>{children}</>
