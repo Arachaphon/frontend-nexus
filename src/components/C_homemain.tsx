@@ -7,7 +7,7 @@ interface CHomeMainProps {
 
 export default function DormitoryLayout({ title }: CHomeMainProps) {
     const navigate = useNavigate();
-    const { isOwner } = useAuth()
+    const { isUser} = useAuth()
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [username, setUsername] = useState('Loading...');
 
@@ -68,7 +68,7 @@ export default function DormitoryLayout({ title }: CHomeMainProps) {
 
                     {isDropdownOpen && (
                         <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg overflow-hidden z-30">
-                            {isOwner && (
+                            {isUser && (
                                 <Link to="/homemain/profilesettings" onClick={() => setIsDropdownOpen(false)}>
                                     <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 border-b border-gray-200 text-left">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -26,9 +26,6 @@ interface FormErrors {
 
 type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 
-/* ────────────────────────────────────────────────────────── */
-/* Small reusable field wrapper                              */
-/* ────────────────────────────────────────────────────────── */
 const Field = ({
   label,
   required,
@@ -177,7 +174,6 @@ export default function DormInfo() {
     }
   }, [saveStatus]);
 
-  // ── Helpers ──────────────────────────────────────────────
   const isDirty = originalData
     ? Object.keys(formData).some((k) => formData[k as keyof FormData] !== originalData[k as keyof FormData])
     : false;
@@ -207,7 +203,6 @@ export default function DormInfo() {
     return Object.keys(e).length === 0;
   };
 
-  // ── Submit — uses PATCH when id exists, POST for new ────
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!validate()) return;
@@ -257,7 +252,6 @@ export default function DormInfo() {
     if (originalData) { setFormData(originalData); setErrors({}); }
   };
 
-  // ── Loading skeleton ─────────────────────────────────────
   if (initialLoad) {
     return (
       <div className="flex h-screen bg-[#f7faf8] overflow-hidden">
@@ -271,8 +265,7 @@ export default function DormInfo() {
       </div>
     );
   }
-
-  // ── Main render ───────────────────────────────────────────
+ 
   return (
     <div className="flex h-screen bg-[#f7faf8] font-sans overflow-hidden">
       <Sidebar />
@@ -448,11 +441,10 @@ export default function DormInfo() {
                 <button
                   onClick={handleSubmit}
                   disabled={saveStatus === 'saving'}
-                  className={`flex items-center gap-2 px-7 py-2.5 rounded-xl text-sm font-semibold text-white
-                    shadow-sm transition-all
-                    ${saveStatus === 'saving'
-                      ? 'bg-[#0e4b3a]/50 cursor-not-allowed'
-                      : 'bg-[#0e4b3a] hover:bg-[#0a3a2d] active:scale-[0.98]'
+                  className={`px-10 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all
+                    ${saveStatus !== 'saving'
+                      ? 'bg-[#76736e] hover:bg-[#5e5b57] text-white'
+                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                 >
                   {saveStatus === 'saving' ? (

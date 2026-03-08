@@ -31,6 +31,44 @@ const BANK_OPTIONS = [
   { value: 'พร้อมเพย์', label: 'พร้อมเพย์', logo: '/promptpay.png', color: 'bg-blue-600' },
 ];
 
+type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
+
+const Toast = ({ status, message }: { status: SaveStatus; message: string }) => {
+  if (status === 'idle') return null;
+
+  const styles: Record<string, string> = {
+    saving: 'bg-blue-50 border-blue-200 text-blue-700',
+    success: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+    error: 'bg-red-50 border-red-200 text-red-700',
+  };
+
+  const icons: Record<string, React.ReactNode> = {
+    saving: (
+      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+      </svg>
+    ),
+    success: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    ),
+    error: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    ),
+  };
+
+  return (
+    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg text-sm font-medium transition-all ${styles[status]}`}>
+      {icons[status]}
+      {message}
+    </div>
+  );
+};
+
 export default function BankInfo() {
   const { dormitoryId } = useParams();
   const navigate = useNavigate();
@@ -39,6 +77,8 @@ export default function BankInfo() {
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [dormitoryName, setDormitoryName] = useState<string>('');
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [toastMsg, setToastMsg] = useState('');
 
   // --- States ส่วนบัญชีธนาคาร และ Payment Note ---
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
@@ -98,10 +138,19 @@ export default function BankInfo() {
     fetchDormitoryData();
   }, [fetchDormitoryData]);
 
+  // Auto-dismiss toast after 3s
+  useEffect(() => {
+    if (saveStatus === 'success' || saveStatus === 'error') {
+      const t = setTimeout(() => setSaveStatus('idle'), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [saveStatus]);
+
   // --- ระบบจัดการบัญชีธนาคาร ---
   const handleOpenModal = () => {
     if (bankAccounts.length >= 3) {
-      alert('สามารถเพิ่มบัญชีธนาคารได้สูงสุด 3 บัญชีเท่านั้น');
+      setSaveStatus('error');
+      setToastMsg('สามารถเพิ่มบัญชีธนาคารได้สูงสุด 3 บัญชีเท่านั้น');
       return;
     }
     setShowModal(true);
@@ -124,7 +173,8 @@ export default function BankInfo() {
 
   const handleSaveAccount = async () => {
     if (!selectedBank || !accountNumber.trim() || !accountName.trim()) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+      setSaveStatus('error');
+      setToastMsg('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
     const token = localStorage.getItem('token');
@@ -165,7 +215,8 @@ export default function BankInfo() {
         handleCloseModal();
       }
     } catch (err) {
-      alert("ไม่สามารถบันทึกบัญชีได้");
+      setSaveStatus('error');
+      setToastMsg('ไม่สามารถบันทึกบัญชีได้');
     }
   };
 
@@ -184,7 +235,8 @@ export default function BankInfo() {
         setBankAccounts(bankAccounts.filter(acc => acc.id !== id));
       }
     } catch (err) {
-      alert("ลบไม่สำเร็จ");
+      setSaveStatus('error');
+      setToastMsg('ลบไม่สำเร็จ');
     }
   };
 
@@ -198,9 +250,13 @@ export default function BankInfo() {
       const activeDormId = dormitoryId || localStorage.getItem('dormitoryId');
       
       if (!activeDormId) {
-        alert("ไม่พบข้อมูลหอพัก กรุณาสร้างข้อมูลหอพักก่อนเพิ่มช่องทางการชำระเงิน");
+        setSaveStatus('error');
+        setToastMsg('ไม่พบข้อมูลหอพัก กรุณาสร้างข้อมูลหอพักก่อน');
         return;
       }
+
+      setSaveStatus('saving');
+      setToastMsg('กำลังบันทึก...');
 
       // บันทึก Payment Note (PATCH)
       const response = await fetch(`${API_BASE}/api/dormitories/banks/payment-note/${activeDormId}`, {
@@ -226,17 +282,15 @@ export default function BankInfo() {
         throw new Error(result.message || 'ไม่สามารถบันทึกข้อมูลได้');
       }
       
-      alert('บันทึกข้อมูลสำเร็จ');
+      setSaveStatus('success');
+      setToastMsg('บันทึกข้อมูลสำเร็จ');
       
       // เพิ่ม navigate เพื่อเปลี่ยนหน้าหลังจากบันทึกสำเร็จ
       // navigate('/homemain/utilitycalculation'); 
 
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("เกิดข้อผิดพลาดที่ไม่รู้จัก");
-      } 
+      setSaveStatus('error');
+      setToastMsg(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก');
     } finally {
       setLoading(false);
     }
@@ -480,6 +534,8 @@ export default function BankInfo() {
           </div>
         </div>
       )}
+
+      <Toast status={saveStatus} message={toastMsg} />
     </div> 
   );
 }
