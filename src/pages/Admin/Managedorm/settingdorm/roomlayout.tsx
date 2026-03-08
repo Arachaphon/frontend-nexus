@@ -265,7 +265,7 @@ export default function RoomLayout() {
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  ถัดไป  
+                  บันทึก 
                 </button>
               </div>
             </div>
