@@ -25,8 +25,12 @@
 🔗 [ทดลองใช้งานระบบจัดการหอพัก](thenexus-chi.vercel.app)
 
 ---
-## 🛠 Backend github
+## 🛠 Forntend github and Forntend gitLab
 🔗 https://github.com/Arachaphon/backend-nexus.git
+🔗 https://gitlab.com/thenexus1/frontend-nexus.git
+## 🛠 Backend github and Backend gitLab
+🔗 https://github.com/Arachaphon/backend-nexus.git
+🔗 https://gitlab.com/thenexus1/backend-nexus.git
 
 ---
 
